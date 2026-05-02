@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Svastha — Ancient Healing, Modern Life</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Nunito+Sans:wght@300;400;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --forest:#1a2e1a;--moss:#3d5c2e;--sage:#6b8f5e;
+  --bronze:#a0693a;--gold:#c8952a;--cream:#f4ede0;
+  --bark:#2c1f0e;--leaf:#4a7a3d;--mist:rgba(255,255,255,0.06);
+  --lotus:#d4587a;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--forest);color:var(--cream);font-family:'Nunito Sans',sans-serif;overflow-x:hidden;}
+
+/* ── LOADER ── */
+#loader{position:fixed;inset:0;z-index:9999;background:var(--bark);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 1s ease,visibility 1s ease;}
+#loader.hidden{opacity:0;visibility:hidden;pointer-events:none;}
+.loader-lotus{font-size:5rem;animation:spin-slow 4s linear infinite;filter:drop-shadow(0 0 20px rgba(212,88,122,0.6));}
+.loader-bar{width:220px;height:2px;background:rgba(255,255,255,0.08);margin-top:1.5rem;border-radius:2px;overflow:hidden;}
+.loader-bar-fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--lotus));animation:load-fill 2.6s ease forwards;}
+.loader-text{font-family:'EB Garamond',serif;font-size:0.85rem;letter-spacing:0.35em;color:var(--sage);margin-top:1rem;text-transform:uppercase;}
+@keyframes spin-slow{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+@keyframes load-fill{0%{width:0}100%{width:100%}}
+
+/* ── BGM ── */
+#bgm-btn{position:fixed;bottom:2rem;right:2rem;z-index:200;width:44px;height:44px;border-radius:50%;background:rgba(26,46,26,0.85);border:1px solid rgba(200,149,42,0.4);color:var(--gold);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all 0.3s;box-shadow:0 4px 15px rgba(0,0,0,0.3);}
+#bgm-btn:hover{background:rgba(61,92,46,0.8);}
+#bgm-btn.playing{animation:pulse-ring 2s ease infinite;}
+@keyframes pulse-ring{0%,100%{box-shadow:0 0 0 0 rgba(200,149,42,0.4)}50%{box-shadow:0 0 0 8px rgba(200,149,42,0)}}
+
+/* ── GUIDE AVATAR ── */
+#guide{position:fixed;right:1.2rem;top:50%;transform:translateY(-50%);z-index:150;display:flex;flex-direction:column;align-items:center;gap:0.4rem;cursor:pointer;}
+.guide-aura{width:54px;height:54px;border-radius:50%;background:radial-gradient(circle,rgba(200,149,42,0.3),rgba(61,92,46,0.2));border:1px solid rgba(200,149,42,0.4);display:flex;align-items:center;justify-content:center;font-size:1.6rem;animation:guide-breathe 4s ease-in-out infinite;box-shadow:0 0 20px rgba(200,149,42,0.15);backdrop-filter:blur(8px);}
+@keyframes guide-breathe{0%,100%{transform:scale(1);box-shadow:0 0 20px rgba(200,149,42,0.15)}50%{transform:scale(1.06);box-shadow:0 0 30px rgba(200,149,42,0.3)}}
+.guide-label{font-size:0.55rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--sage);text-align:center;}
+.guide-tooltip{position:absolute;right:65px;top:50%;transform:translateY(-50%);background:rgba(26,46,26,0.95);border:1px solid rgba(200,149,42,0.3);border-radius:4px;padding:1rem 1.2rem;width:220px;display:none;backdrop-filter:blur(12px);}
+.guide-tooltip.show{display:block;animation:fadeIn 0.3s ease;}
+.guide-tooltip p{font-size:0.8rem;color:var(--sage);line-height:1.6;font-family:'EB Garamond',serif;font-style:italic;}
+.guide-tooltip .gt-name{font-family:'Cinzel',serif;font-size:0.75rem;color:var(--gold);margin-bottom:0.5rem;letter-spacing:0.1em;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-50%) translateX(8px)}to{opacity:1;transform:translateY(-50%) translateX(0)}}
+
+/* ── NAV ── */
+nav{position:fixed;top:28px;left:0;right:0;z-index:100;padding:1rem 3rem;display:flex;justify-content:space-between;align-items:center;background:rgba(26,46,26,0.88);backdrop-filter:blur(14px);border-bottom:1px solid rgba(107,143,94,0.18);}
+.nav-logo{display:flex;align-items:center;gap:0.7rem;}
+.lotus-icon{font-size:1.8rem;animation:lotus-pulse 3s ease-in-out infinite;filter:drop-shadow(0 0 8px rgba(212,88,122,0.5));}
+@keyframes lotus-pulse{0%,100%{transform:scale(1) rotate(0deg)}50%{transform:scale(1.08) rotate(5deg)}}
+.nav-logo-text{font-family:'Cinzel',serif;font-size:1.4rem;color:var(--gold);letter-spacing:0.1em;}
+.nav-logo-sub{font-size:0.55rem;letter-spacing:0.3em;color:var(--sage);text-transform:uppercase;display:block;}
+.nav-links{display:flex;gap:2.5rem;align-items:center;}
+.nav-links a{font-size:0.82rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--sage);text-decoration:none;transition:color 0.3s;}
+.nav-links a:hover,.nav-links a.active{color:var(--gold);}
+.admin-btn{font-size:0.72rem;padding:0.35rem 0.9rem;background:rgba(160,105,58,0.15);border:1px solid rgba(160,105,58,0.3);color:var(--bronze);border-radius:2px;cursor:pointer;letter-spacing:0.1em;transition:all 0.3s;font-family:'Cinzel',serif;}
+.admin-btn:hover{background:rgba(160,105,58,0.25);color:var(--gold);}
+
+/* ── TOP LEFT USERS ── */
+.users-section{position:fixed;top:6.5rem;left:1rem;z-index:90;background:rgba(10,20,10,0.65);padding:0.8rem 1rem;border-radius:4px;border:1px solid rgba(107,143,94,0.2);backdrop-filter:blur(10px);max-width:190px;}
+.users-heading{font-size:0.72rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--bronze);margin-bottom:0.8rem;font-family:'Cinzel',serif;}
+.users-list{display:flex;flex-direction:column;gap:0.6rem;}
+.top-user{font-size:0.95rem;color:rgba(244,237,224,0.85);line-height:1.5;transition:color 0.3s;position:relative;padding-left:0.2rem;font-family:'EB Garamond',serif;font-style:italic;}
+.top-user:hover{color:var(--gold);}
+.top-user span{color:rgba(200,149,42,0.7);font-size:0.78rem;display:block;font-style:normal;}
+
+/* Pushp warsha - petal fall */
+.petal{position:absolute;pointer-events:none;font-size:0.9rem;animation:petal-fall linear forwards;opacity:0;}
+@keyframes petal-fall{0%{transform:translateY(-10px) rotate(0deg);opacity:0.9}100%{transform:translateY(60px) rotate(180deg) translateX(15px);opacity:0}}
+
+/* ── HERO ── */
+#hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:7rem 2rem 4rem;position:relative;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse 70% 60% at 50% 40%,rgba(61,92,46,0.28) 0%,transparent 70%),radial-gradient(ellipse 40% 40% at 15% 85%,rgba(160,105,58,0.1) 0%,transparent 60%);}
+.particle{position:absolute;border-radius:50%;pointer-events:none;animation:float-p linear infinite;}
+@keyframes float-p{0%{transform:translateY(100vh) rotate(0deg);opacity:0}10%{opacity:1}90%{opacity:0.3}100%{transform:translateY(-10vh) rotate(720deg);opacity:0}}
+.shlok-wrap{position:relative;z-index:1;margin-bottom:1.5rem;animation:fadeInDown 1.2s ease 0.4s both;}
+.shlok-dev{font-family:'EB Garamond',serif;font-style:italic;font-size:clamp(1.4rem,3.5vw,2.4rem);color:var(--gold);line-height:1.9;text-shadow:0 0 40px rgba(200,149,42,0.3);}
+.shlok-line{width:100px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:1rem auto;}
+.shlok-eng{font-size:0.8rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--sage);}
+.hero-title{font-family:'Cinzel',serif;font-size:clamp(3rem,7.5vw,6.5rem);font-weight:900;line-height:1.05;color:var(--cream);position:relative;z-index:1;margin:1.5rem 0 1rem;animation:fadeInUp 1.2s ease 0.7s both;}
+.hero-title span{color:var(--leaf);}
+.hero-sub{font-family:'EB Garamond',serif;font-style:italic;font-size:1.2rem;color:rgba(244,237,224,0.65);max-width:500px;line-height:1.8;position:relative;z-index:1;animation:fadeInUp 1.2s ease 1s both;}
+.hero-btns{display:flex;gap:1.2rem;margin-top:2.5rem;position:relative;z-index:1;animation:fadeInUp 1.2s ease 1.2s both;flex-wrap:wrap;justify-content:center;}
+.btn-primary{padding:1rem 2.5rem;background:linear-gradient(135deg,var(--moss),var(--leaf));color:var(--cream);font-family:'Cinzel',serif;font-size:0.82rem;letter-spacing:0.2em;text-transform:uppercase;text-decoration:none;border-radius:2px;border:1px solid rgba(107,143,94,0.4);transition:all 0.3s;box-shadow:0 4px 20px rgba(61,92,46,0.4);}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(74,122,61,0.5);}
+
+/* ── LOTUS ANIMATION ── */
+#lotus-anim{padding:5rem 4rem;text-align:center;position:relative;overflow:hidden;border-top:1px solid rgba(107,143,94,0.12);}
+.lotus-canvas-wrap{position:relative;width:280px;height:280px;margin:0 auto 3rem;}
+.lotus-ring{position:absolute;inset:0;border-radius:50%;border:1px solid rgba(212,88,122,0.15);animation:ring-expand 4s ease-in-out infinite;}
+.lotus-ring:nth-child(2){animation-delay:1.3s;border-color:rgba(200,149,42,0.1);}
+.lotus-ring:nth-child(3){animation-delay:2.6s;border-color:rgba(107,143,94,0.1);}
+@keyframes ring-expand{0%{transform:scale(0.6);opacity:0.8}100%{transform:scale(1.6);opacity:0}}
+.lotus-center{position:absolute;inset:50%;transform:translate(-50%,-50%);width:100px;height:100px;display:flex;align-items:center;justify-content:center;font-size:4.5rem;animation:lotus-breathe 4s ease-in-out infinite;filter:drop-shadow(0 0 20px rgba(212,88,122,0.4));}
+@keyframes lotus-breathe{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.1)}}
+.mobius-lines{display:flex;justify-content:center;gap:0.4rem;margin-top:0.5rem;}
+.mobius-line{width:30px;height:2px;background:var(--gold);border-radius:1px;animation:line-wave 2s ease-in-out infinite;}
+.mobius-line:nth-child(2){animation-delay:0.3s;background:var(--sage);}
+.mobius-line:nth-child(3){animation-delay:0.6s;background:var(--lotus);}
+@keyframes line-wave{0%,100%{transform:scaleX(1);opacity:0.6}50%{transform:scaleX(1.4);opacity:1}}
+.intro-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;max-width:900px;margin:2.5rem auto 0;}
+.intro-card{padding:2rem;background:var(--mist);border:1px solid rgba(107,143,94,0.2);border-radius:2px;text-align:left;transition:all 0.3s;border-left:3px solid var(--bronze);}
+.intro-card:hover{background:rgba(255,255,255,0.08);border-left-color:var(--gold);transform:translateY(-4px);}
+.intro-card-icon{font-size:2rem;margin-bottom:1rem;}
+.intro-card-title{font-family:'Cinzel',serif;font-size:1rem;color:var(--gold);margin-bottom:0.6rem;}
+.intro-card p{font-size:0.82rem;color:rgba(244,237,224,0.65);line-height:1.7;}
+
+/* ── INTRO ── */
+#intro{padding:5rem 8rem;display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center;border-top:1px solid rgba(107,143,94,0.12);}
+.intro-text h2{font-family:'Cinzel',serif;font-size:2.5rem;color:var(--gold);margin-bottom:1.5rem;line-height:1.2;}
+.intro-text p{font-family:'EB Garamond',serif;font-size:1.12rem;line-height:1.9;color:rgba(244,237,224,0.8);margin-bottom:1.1rem;}
+.pillars{display:flex;flex-direction:column;gap:1.2rem;}
+.pillar{padding:1.4rem 1.8rem;background:var(--mist);border:1px solid rgba(107,143,94,0.18);border-left:3px solid var(--bronze);border-radius:2px;transition:all 0.3s;}
+.pillar:hover{border-left-color:var(--gold);transform:translateX(5px);}
+.pillar-title{font-family:'Cinzel',serif;font-size:0.95rem;color:var(--gold);margin-bottom:0.4rem;}
+.pillar p{font-size:0.84rem;color:var(--sage);line-height:1.6;}
+
+/* ── ASSOCIATES ── */
+#associates{padding:3.5rem 6rem;display:flex;align-items:center;justify-content:center;gap:4rem;border-top:1px solid rgba(107,143,94,0.1);border-bottom:1px solid rgba(107,143,94,0.1);}
+.assoc-label{font-size:0.72rem;letter-spacing:0.3em;text-transform:uppercase;color:rgba(244,237,224,0.3);}
+.assoc-logos{display:flex;gap:3rem;align-items:center;}
+.assoc-link{display:flex;flex-direction:column;align-items:center;gap:0.5rem;text-decoration:none;opacity:0.5;transition:opacity 0.3s;}
+.assoc-link:hover{opacity:0.9;}
+.assoc-icon{width:46px;height:46px;background:rgba(107,143,94,0.12);border:1px solid rgba(107,143,94,0.25);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;}
+.assoc-link span{font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.15em;color:var(--sage);}
+
+/* ── STATS ── */
+#stats{padding:4rem 6rem;display:flex;justify-content:center;gap:4rem;flex-wrap:wrap;border-bottom:1px solid rgba(107,143,94,0.1);}
+.stat-item{text-align:center;}
+.stat-num{font-family:'Cinzel',serif;font-size:2.5rem;font-weight:900;color:var(--gold);display:block;}
+.stat-label{font-size:0.72rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--sage);margin-top:0.3rem;display:block;}
+
+/* ── FOUNDERS ── */
+#founders{padding:4rem 6rem;text-align:center;border-bottom:1px solid rgba(107,143,94,0.1);}
+.founders-wrap{display:flex;justify-content:center;align-items:center;gap:3rem;flex-wrap:wrap;}
+.founder-item{display:flex;flex-direction:column;align-items:center;gap:0.5rem;}
+.founder-role{font-size:0.68rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--bronze);}
+.founder-name{font-family:'Cinzel',serif;font-size:1.2rem;color:var(--cream);animation:name-glow 3s ease-in-out infinite;}
+@keyframes name-glow{0%,100%{text-shadow:none;color:var(--cream)}50%{text-shadow:0 0 20px rgba(200,149,42,0.4);color:var(--gold)}}
+.founder-name.secondary{animation-delay:1.5s;}
+.founder-divider{width:1px;height:40px;background:rgba(107,143,94,0.3);}
+
+/* ── TRI-GUNA ── */
+#triguna{padding:5rem 4rem;text-align:center;}
+.section-eyebrow{font-size:0.72rem;letter-spacing:0.4em;text-transform:uppercase;color:var(--bronze);margin-bottom:1rem;}
+.section-title{font-family:'Cinzel',serif;font-size:2.2rem;color:var(--cream);margin-bottom:0.8rem;}
+.section-sub{font-family:'EB Garamond',serif;font-style:italic;font-size:1rem;color:var(--sage);margin-bottom:3.5rem;max-width:500px;margin-left:auto;margin-right:auto;}
+.guna-cards{display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;margin-bottom:4rem;}
+.guna-card{width:240px;padding:2.5rem 2rem;background:var(--mist);border:1px solid rgba(107,143,94,0.18);border-radius:2px;text-align:center;transition:all 0.4s;}
+.guna-card:hover{transform:translateY(-8px);}
+.guna-card.sattva{border-top:3px solid #c8e6c9;}
+.guna-card.rajas{border-top:3px solid var(--bronze);}
+.guna-card.tamas{border-top:3px solid #546e7a;}
+.guna-symbol{font-size:2.5rem;margin-bottom:1rem;}
+.guna-name{font-family:'Cinzel',serif;font-size:1.3rem;margin-bottom:0.4rem;}
+.guna-card.sattva .guna-name{color:#c8e6c9;}
+.guna-card.rajas .guna-name{color:var(--bronze);}
+.guna-card.tamas .guna-name{color:#90a4ae;}
+.guna-element{font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:1rem;opacity:0.5;}
+.guna-desc{font-size:0.82rem;color:rgba(244,237,224,0.6);line-height:1.7;}
+
+/* ── WEBAPP TEASER ── */
+#webapp-teaser{padding:5rem 4rem;text-align:center;background:linear-gradient(135deg,rgba(26,46,26,0.8),rgba(44,31,14,0.6));border-top:1px solid rgba(107,143,94,0.15);border-bottom:1px solid rgba(107,143,94,0.15);position:relative;overflow:hidden;}
+#webapp-teaser::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 50% 50%,rgba(200,149,42,0.04),transparent);}
+.teaser-rishi{font-size:4rem;margin-bottom:1rem;animation:rishi-meditate 5s ease-in-out infinite;display:block;filter:drop-shadow(0 0 15px rgba(200,149,42,0.3));}
+@keyframes rishi-meditate{0%,100%{transform:scale(1) translateY(0);filter:drop-shadow(0 0 15px rgba(200,149,42,0.3))}50%{transform:scale(1.05) translateY(-5px);filter:drop-shadow(0 0 25px rgba(200,149,42,0.5))}}
+
+/* Pushp warsha teaser */
+.teaser-petals{position:absolute;top:0;left:0;right:0;height:100%;pointer-events:none;overflow:hidden;}
+.t-petal{position:absolute;top:-20px;font-size:1.2rem;animation:teaser-fall linear infinite;opacity:0;}
+@keyframes teaser-fall{0%{transform:translateY(-20px) rotate(0deg);opacity:0.8}100%{transform:translateY(110%) rotate(360deg) translateX(20px);opacity:0}}
+
+.teaser-title{font-family:'Cinzel',serif;font-size:2.8rem;font-weight:900;color:var(--gold);margin-bottom:0.8rem;position:relative;z-index:1;}
+.teaser-sub{font-family:'EB Garamond',serif;font-style:italic;font-size:1.1rem;color:var(--sage);max-width:550px;margin:0 auto 2rem;line-height:1.8;position:relative;z-index:1;}
+.teaser-features{display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;margin-bottom:2.5rem;position:relative;z-index:1;}
+.teaser-feat{padding:0.6rem 1.2rem;background:rgba(200,149,42,0.08);border:1px solid rgba(200,149,42,0.2);border-radius:2px;font-size:0.78rem;color:rgba(244,237,224,0.7);letter-spacing:0.08em;}
+.cs-badge{display:inline-flex;align-items:center;gap:0.6rem;padding:0.7rem 2rem;background:rgba(200,149,42,0.1);border:1px solid rgba(200,149,42,0.35);border-radius:2px;font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:0.25em;color:var(--gold);animation:badge-pulse 2s ease-in-out infinite;position:relative;z-index:1;}
+@keyframes badge-pulse{0%,100%{box-shadow:0 0 0 0 rgba(200,149,42,0.3)}50%{box-shadow:0 0 0 12px rgba(200,149,42,0)}}
+.cs-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);animation:dot-blink 1.2s ease-in-out infinite;}
+@keyframes dot-blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.3;transform:scale(0.6)}}
+
+/* ── ADVANCE FOOTER BAR ── */
+.advance-bar{padding:1.2rem;text-align:center;background:rgba(0,0,0,0.3);border-top:1px solid rgba(107,143,94,0.15);}
+.advance-bar span{font-family:'Cinzel',serif;font-size:0.78rem;letter-spacing:0.3em;text-transform:uppercase;color:rgba(200,149,42,0.5);animation:advance-glow 4s ease-in-out infinite;}
+@keyframes advance-glow{0%,100%{opacity:0.5;letter-spacing:0.3em}50%{opacity:1;letter-spacing:0.4em;color:var(--gold)}}
+
+/* ── MAIN FOOTER ── */
+footer{padding:2.5rem 5rem;border-top:1px solid rgba(107,143,94,0.12);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;}
+.footer-logo{font-family:'Cinzel',serif;font-size:1rem;color:var(--gold);display:flex;align-items:center;gap:0.5rem;}
+.footer-links{display:flex;gap:2rem;}
+.footer-links a{font-size:0.78rem;color:var(--sage);text-decoration:none;letter-spacing:0.1em;transition:color 0.3s;}
+.footer-links a:hover{color:var(--gold);}
+.footer-copy{font-size:0.72rem;color:rgba(244,237,224,0.25);}
+
+/* ── ADMIN PANEL ── */
+#admin-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
+#admin-overlay.show{display:flex;}
+.admin-panel{background:var(--bark);border:1px solid rgba(200,149,42,0.3);border-radius:4px;width:90%;max-width:700px;max-height:85vh;overflow-y:auto;padding:2.5rem;}
+.admin-panel h2{font-family:'Cinzel',serif;color:var(--gold);margin-bottom:0.3rem;font-size:1.5rem;}
+.admin-panel>p{color:var(--sage);font-size:0.82rem;margin-bottom:2rem;}
+.admin-close{position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--sage);font-size:1.5rem;cursor:pointer;}
+.admin-section{margin-bottom:2rem;padding-bottom:2rem;border-bottom:1px solid rgba(107,143,94,0.15);}
+.admin-section h3{font-family:'Cinzel',serif;font-size:1rem;color:var(--bronze);margin-bottom:1rem;letter-spacing:0.1em;}
+.admin-row{display:grid;grid-template-columns:1fr auto;gap:0.8rem;align-items:center;margin-bottom:0.8rem;}
+.admin-input{width:100%;padding:0.7rem 1rem;background:rgba(255,255,255,0.05);border:1px solid rgba(107,143,94,0.2);border-radius:2px;color:var(--cream);font-family:'Nunito Sans',sans-serif;font-size:0.85rem;outline:none;}
+.admin-input:focus{border-color:rgba(200,149,42,0.4);}
+.admin-apply{padding:0.7rem 1.5rem;background:linear-gradient(135deg,var(--moss),var(--leaf));color:var(--cream);border:none;border-radius:2px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.75rem;letter-spacing:0.15em;white-space:nowrap;}
+.admin-apply:hover{opacity:0.85;}
+.admin-dl-btn{display:block;width:100%;padding:0.9rem;background:rgba(160,105,58,0.2);border:1px solid var(--bronze);color:var(--bronze);font-family:'Cinzel',serif;font-size:0.82rem;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all 0.3s;text-align:center;margin-bottom:0.8rem;}
+.admin-dl-btn:hover{background:rgba(160,105,58,0.3);}
+#admin-login{background:var(--bark);border:1px solid rgba(200,149,42,0.3);border-radius:4px;padding:2.5rem;width:90%;max-width:400px;text-align:center;}
+#admin-login h2{font-family:'Cinzel',serif;color:var(--gold);margin-bottom:1.5rem;}
+.admin-pw-input{width:100%;padding:0.9rem;background:rgba(255,255,255,0.05);border:1px solid rgba(107,143,94,0.2);border-radius:2px;color:var(--cream);font-size:1rem;outline:none;text-align:center;letter-spacing:0.2em;margin-bottom:1rem;}
+.admin-login-btn{width:100%;padding:0.9rem;background:linear-gradient(135deg,var(--moss),var(--leaf));color:var(--cream);border:none;border-radius:2px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:0.2em;}
+#admin-err{color:#e07a3a;font-size:0.8rem;margin-top:0.5rem;display:none;}
+
+/* ANIMATIONS */
+@keyframes fadeInDown{from{opacity:0;transform:translateY(-25px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(35px)}to{opacity:1;transform:translateY(0)}}
+.reveal{opacity:0;transform:translateY(40px);transition:opacity 0.8s ease,transform 0.8s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+
+@media(max-width:900px){
+  nav{padding:1rem 1.5rem;}.nav-links{gap:1rem;}
+  .users-section{position:static;max-width:100%;margin:5rem 1rem 0;display:block !important;}
+  #guide{display:none;}
+  #intro{grid-template-columns:1fr;gap:3rem;padding:4rem 2rem;}
+  #associates{flex-direction:column;gap:2rem;padding:3rem 2rem;}
+  .intro-cards{grid-template-columns:1fr;}
+  #stats{gap:2rem;padding:3rem 2rem;}
+  footer{flex-direction:column;text-align:center;padding:2rem;}
+  .teaser-features{flex-direction:column;align-items:center;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-lotus">🪷</div>
+  <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+  <div class="loader-text">Awakening Svastha</div>
+</div>
+
+<!-- BGM -->
+<button id="bgm-btn" onclick="toggleBGM()" title="Toggle ambient music">♪</button>
+<script>
+let audioCtx,gainNode,bgmOn=false;
+function createBGM(){
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  gainNode=audioCtx.createGain();gainNode.gain.setValueAtTime(0.07,audioCtx.currentTime);gainNode.connect(audioCtx.destination);
+  const freqs=[196,220,261.6,329.6,392,440,523.2];
+  function pluck(){if(!bgmOn)return;const f=freqs[Math.floor(Math.random()*freqs.length)];const osc=audioCtx.createOscillator();const g=audioCtx.createGain();osc.type='sawtooth';osc.frequency.setValueAtTime(f,audioCtx.currentTime);g.gain.setValueAtTime(0.12,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+2.5);osc.connect(g);g.connect(gainNode);osc.start();osc.stop(audioCtx.currentTime+2.5);setTimeout(pluck,700+Math.random()*1400);}
+  function flute(){if(!bgmOn)return;const ff=[261.6,329.6,392][Math.floor(Math.random()*3)];const osc=audioCtx.createOscillator();const g=audioCtx.createGain();osc.type='sine';osc.frequency.setValueAtTime(ff,audioCtx.currentTime);g.gain.setValueAtTime(0,audioCtx.currentTime);g.gain.linearRampToValueAtTime(0.1,audioCtx.currentTime+0.8);g.gain.linearRampToValueAtTime(0,audioCtx.currentTime+4);osc.connect(g);g.connect(gainNode);osc.start();osc.stop(audioCtx.currentTime+4);setTimeout(flute,3500+Math.random()*3000);}
+  pluck();flute();
+}
+function toggleBGM(){const btn=document.getElementById('bgm-btn');if(!bgmOn){bgmOn=true;if(!audioCtx)createBGM();else audioCtx.resume();gainNode.gain.setValueAtTime(0.07,audioCtx.currentTime);btn.textContent='♫';btn.classList.add('playing');}else{bgmOn=false;gainNode.gain.setValueAtTime(0,audioCtx.currentTime);btn.textContent='♪';btn.classList.remove('playing');}}
+</script>
+
+<!-- GUIDE AVATAR -->
+<!-- INTRO SCREEN — shown only on first visit -->
+<div id="intro-screen" style="position:fixed;inset:0;z-index:9500;background:linear-gradient(135deg,#0d1a0d,#1a2e1a,#2c1f0e);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem;overflow:hidden;transition:opacity 0.8s ease,visibility 0.8s ease;">
+  <div id="intro-petals" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;"></div>
+
+  <div id="istep0" class="istep" style="display:flex;flex-direction:column;align-items:center;max-width:680px;animation:fadeInUp 0.5s ease;">
+    <div style="font-size:4.5rem;margin-bottom:1.5rem;filter:drop-shadow(0 0 20px rgba(200,149,42,0.4));">🪷</div>
+    <h1 style="font-family:'Cinzel',serif;font-size:clamp(1.8rem,5vw,3rem);color:var(--gold);margin-bottom:1rem;">Welcome to Svastha</h1>
+    <p style="font-family:'EB Garamond',serif;font-size:1.1rem;color:rgba(244,237,224,0.85);line-height:1.9;max-width:560px;">Before you enter — 2 minutes to understand the science that will power your health from today onwards.</p>
+    <div style="display:flex;gap:1rem;margin-top:2rem;"><button onclick="nextIStep()" style="padding:0.9rem 2.2rem;background:linear-gradient(135deg,var(--moss),var(--leaf));color:var(--cream);font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:0.2em;text-transform:uppercase;border:none;border-radius:2px;cursor:pointer;">Begin →</button><button onclick="skipIntro()" style="font-size:0.78rem;color:rgba(244,237,224,0.4);cursor:pointer;background:none;border:none;letter-spacing:0.1em;">Skip</button></div>
+  </div>
+
+  <div id="istep1" class="istep" style="display:none;flex-direction:column;align-items:center;max-width:680px;">
+    <div style="font-size:3.5rem;margin-bottom:1rem;">📿</div>
+    <h2 style="font-family:'Cinzel',serif;font-size:clamp(1.5rem,4vw,2.5rem);color:var(--gold);margin-bottom:1rem;">What is Ayurveda?</h2>
+    <p style="font-family:'EB Garamond',serif;font-size:1.05rem;color:rgba(244,237,224,0.85);line-height:1.9;max-width:580px;"><strong style="color:var(--gold);">Ayur</strong> = Life. <strong style="color:var(--gold);">Veda</strong> = Knowledge.<br/><br/>Ayurveda is the world's oldest complete medical system — documented in the <strong style="color:var(--gold);">Charaka Samhita</strong> (400 BCE) and rooted in Vedic knowledge going back 5,00,000+ years. Its core principle: <em>disease begins when you live against your own nature.</em> The cure is returning to it.</p>
+    <p style="font-size:0.7rem;color:rgba(244,237,224,0.3);font-family:'EB Garamond',serif;font-style:italic;margin-top:0.8rem;">Charaka Samhita, Sutrasthana Ch.1 · WHO Traditional Medicine Strategy 2025</p>
+    <div style="display:flex;gap:1rem;margin-top:2rem;"><button onclick="nextIStep()" style="padding:0.9rem 2.2rem;background:linear-gradient(135deg,var(--moss),var(--leaf));color:var(--cream);font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:0.2em;border:none;border-radius:2px;cursor:pointer;">Next →</button><button onclick="skipIntro()" style="font-size:0.78rem;color:rgba(244,237,224,0.4);cursor:pointer;background:none;border:none;">Skip</button></div>
+  </div>
+
+  <div id="istep2" class="istep" style="display:none;flex-direction:column;align-items:center;max-width:720px;">
+    <h2 style="font-family:'Cinzel',serif;font-size:clamp(1.5rem,4vw,2.5rem);color:var(--gold);margin-bottom:1rem;">Your Body Has 3 Forces</h2>
+    <p style="font-family:'EB Garamond',serif;font-size:1rem;color:rgba(244,237,224,0.8);margin-bottom:1.5rem;">Every human body is a unique mix of Vāta, Pitta, and Kapha. You have all three — in a ratio that makes you, <em>you</em>.</p>
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;margin-bottom:1.5rem;">
+      <div style="padding:1.2rem 1.4rem;border-radius:4px;min-width:160px;text-align:center;background:rgba(122,179,212,0.1);border:1px solid rgba(122,179,212,0.4);">
+        <div style="font-size:2rem;margin-bottom:0.5rem;">🌬</div>
+        <div style="font-family:'Cinzel',serif;font-size:1.1rem;color:#7ab3d4;margin-bottom:0.2rem;">Vāta</div>
+        <div style="font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(122,179,212,0.6);margin-bottom:0.5rem;">Air + Space</div>
+        <div style="font-size:0.82rem;color:rgba(244,237,224,0.75);line-height:1.5;">Movement, creativity, breath, nervous system</div>
+      </div>
+      <div style="padding:1.2rem 1.4rem;border-radius:4px;min-width:160px;text-align:center;background:rgba(224,122,58,0.1);border:1px solid rgba(224,122,58,0.4);">
+        <div style="font-size:2rem;margin-bottom:0.5rem;">🔥</div>
+        <div style="font-family:'Cinzel',serif;font-size:1.1rem;color:#e07a3a;margin-bottom:0.2rem;">Pitta</div>
+        <div style="font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(224,122,58,0.6);margin-bottom:0.5rem;">Fire + Water</div>
+        <div style="font-size:0.82rem;color:rgba(244,237,224,0.75);line-height:1.5;">Digestion, metabolism, intelligence, transformation</div>
+      </div>
+      <div style="padding:1.2rem 1.4rem;border-radius:4px;min-width:160px;text-align:center;background:rgba(94,158,107,0.1);border:1px solid rgba(94,158,107,0.4);">
+        <div style="font-size:2rem;margin-bottom:0.5rem;">🌿</div>
+        <div style="font-family:'Cinzel',serif;font-size:1.1rem;color:#5e9e6b;margin-bottom:0.2rem;">Kapha</div>
+        <div style="font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(94,158,107,0.6);margin-bottom:0.5rem;">Earth + Water</div>
+        <div style="font-size:0.82rem;color:rgba(244,237,224,0.75);line-height:1.5;">Structure, memory, immunity, stability</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:1rem;"><button onclick="nextIStep()" style="padding:0.9rem 2.2rem;background:linear-gradient(135deg,var(--moss),var(--leaf));color:var(--cream);font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:0.2em;border:none;border-radius:2px;cursor:pointer;">Next →</button><button onclick="skipIntro()" style="font-size:0.78rem;color:rgba(244,237,224,0.4);cursor:pointer;background:none;border:none;">Skip</button></div>
+  </div>
+
+  <div id="istep3" class="istep" style="display:none;flex-direction:column;align-items:center;max-width:680px;">
+    <div style="font-size:3.5rem;margin-bottom:1rem;">🔬</div>
+    <h2 style="font-family:'Cinzel',serif;font-size:clamp(1.5rem,4vw,2.5rem);color:var(--gold);margin-bottom:1rem;">Your Prakriti — Your Blueprint</h2>
+    <p style="font-family:'EB Garamond',serif;font-size:1.05rem;color:rgba(244,237,224,0.85);line-height:1.9;max-width:580px;">The ratio of Vāta, Pitta, Kapha in your body at birth = your <strong style="color:var(--gold);">Prakriti</strong>. It never changes. Health problems arise when your current state moves away from this blueprint. <em>Svastha helps you find it — and return to it.</em></p>
+    <p style="font-size:0.7rem;color:rgba(244,237,224,0.3);font-style:italic;font-family:'EB Garamond',serif;margin-top:0.5rem;">Charaka Samhita, Vimanasthana Ch.8</p>
+    <div style="display:flex;gap:1rem;margin-top:2rem;"><button onclick="nextIStep()" style="padding:0.9rem 2.2rem;background:linear-gradient(135deg,var(--moss),var(--leaf));color:var(--cream);font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:0.2em;border:none;border-radius:2px;cursor:pointer;">Next →</button><button onclick="skipIntro()" style="font-size:0.78rem;color:rgba(244,237,224,0.4);cursor:pointer;background:none;border:none;">Skip</button></div>
+  </div>
+
+  <div id="istep4" class="istep" style="display:none;flex-direction:column;align-items:center;max-width:680px;">
+    <div style="font-size:3.5rem;margin-bottom:1rem;">🗺</div>
+    <h2 style="font-family:'Cinzel',serif;font-size:clamp(1.5rem,4vw,2.5rem);color:var(--gold);margin-bottom:1rem;">How Svastha Works</h2>
+    <p style="font-family:'EB Garamond',serif;font-size:1.05rem;color:rgba(244,237,224,0.85);line-height:2;max-width:560px;"><strong style="color:var(--gold);">Step 1</strong> — Go to <em>Know Your Dosha</em>. Score Vāta, Pitta, Kapha from 1–10.<br/><strong style="color:var(--gold);">Step 2</strong> — Get your taste-based diet, daily schedule, and disease tendencies.<br/><strong style="color:var(--gold);">Step 3</strong> — Go to <em>Self-Care</em>. Tell your problem. Get mudras, meditation, and healing routine built for YOUR constitution.</p>
+    <div style="display:flex;gap:1rem;margin-top:2rem;"><button onclick="skipIntro()" style="padding:0.9rem 2.2rem;background:linear-gradient(135deg,var(--moss),var(--leaf));color:var(--cream);font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:0.2em;border:none;border-radius:2px;cursor:pointer;">Enter Svastha →</button></div>
+  </div>
+
+  <!-- Step dots -->
+  <div id="intro-dots" style="display:flex;gap:0.5rem;position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);"></div>
+</div>
+
+<!-- LANGUAGE BAR -->
+<div style="position:fixed;top:0;left:0;right:0;z-index:101;display:flex;justify-content:flex-end;align-items:center;padding:0.3rem 3rem;background:rgba(10,20,10,0.7);border-bottom:1px solid rgba(107,143,94,0.12);backdrop-filter:blur(8px);">
+  <button id="lang-en" onclick="setLang('en')" style="font-size:0.7rem;letter-spacing:0.1em;padding:0.2rem 0.7rem;background:rgba(200,149,42,0.15);border:1px solid rgba(200,149,42,0.4);color:var(--gold);cursor:pointer;border-radius:2px;font-family:'Cinzel',serif;">EN</button>
+  <span style="color:rgba(107,143,94,0.4);margin:0 0.3rem;font-size:0.7rem;">·</span>
+  <button id="lang-hi" onclick="setLang('hi')" style="font-size:0.7rem;letter-spacing:0.05em;padding:0.2rem 0.7rem;background:transparent;border:1px solid rgba(107,143,94,0.2);color:rgba(244,237,224,0.4);cursor:pointer;border-radius:2px;font-family:'Cinzel',serif;">हिंदी</button>
+  <span style="color:rgba(107,143,94,0.4);margin:0 0.3rem;font-size:0.7rem;">·</span>
+  <button id="lang-sk" onclick="setLang('sk')" style="font-size:0.7rem;padding:0.2rem 0.7rem;background:transparent;border:1px solid rgba(107,143,94,0.2);color:rgba(244,237,224,0.4);cursor:pointer;border-radius:2px;font-family:'Cinzel',serif;">संस्कृत</button>
+</div>
+
+<!-- GUIDE — step by step panel -->
+<div id="guide" onclick="toggleGuide()" style="position:fixed;right:1.2rem;top:50%;transform:translateY(-50%);z-index:150;display:flex;flex-direction:column;align-items:center;gap:0.4rem;cursor:pointer;">
+  <div class="guide-aura">🧘</div>
+  <div class="guide-label">Guide</div>
+</div>
+<div id="guide-panel" style="position:fixed;right:80px;top:50%;transform:translateY(-50%);width:270px;background:rgba(15,28,15,0.97);border:1px solid rgba(200,149,42,0.35);border-radius:8px;padding:1.5rem;display:none;z-index:151;backdrop-filter:blur(16px);box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+  <div style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--gold);margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;">
+    <span>Step-by-Step Guide</span>
+    <button onclick="event.stopPropagation();document.getElementById('guide-panel').style.display='none'" style="background:none;border:none;color:var(--sage);cursor:pointer;font-size:1.1rem;">✕</button>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:0.6rem;">
+    <a href="prakriti.html" style="display:flex;gap:0.8rem;padding:0.8rem;border-radius:4px;background:rgba(61,92,46,0.2);border:1px solid rgba(200,149,42,0.3);text-decoration:none;transition:all 0.3s;">
+      <span style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--gold);min-width:1.5rem;">1</span>
+      <div><div style="font-family:'Cinzel',serif;font-size:0.82rem;color:var(--cream);margin-bottom:0.2rem;">Find Your Prakriti</div><div style="font-size:0.72rem;color:var(--sage);">Score Vāta, Pitta, Kapha 1–10 on Page 2</div></div>
+    </a>
+    <div style="display:flex;gap:0.8rem;padding:0.8rem;border-radius:4px;background:var(--mist);border:1px solid rgba(107,143,94,0.15);">
+      <span style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--gold);min-width:1.5rem;">2</span>
+      <div><div style="font-family:'Cinzel',serif;font-size:0.82rem;color:var(--cream);margin-bottom:0.2rem;">Read Your Blueprint</div><div style="font-size:0.72rem;color:var(--sage);">Get taste-based diet, schedule, disease tendencies</div></div>
+    </div>
+    <a href="heal.html" style="display:flex;gap:0.8rem;padding:0.8rem;border-radius:4px;background:var(--mist);border:1px solid rgba(107,143,94,0.15);text-decoration:none;">
+      <span style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--gold);min-width:1.5rem;">3</span>
+      <div><div style="font-family:'Cinzel',serif;font-size:0.82rem;color:var(--cream);margin-bottom:0.2rem;">Heal Your Problem</div><div style="font-size:0.72rem;color:var(--sage);">Self-Care page → mudras, meditation, healing routine</div></div>
+    </a>
+    <div style="display:flex;gap:0.8rem;padding:0.8rem;border-radius:4px;background:var(--mist);border:1px solid rgba(107,143,94,0.15);">
+      <span style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--gold);min-width:1.5rem;">4</span>
+      <div><div style="font-family:'Cinzel',serif;font-size:0.82rem;color:var(--cream);margin-bottom:0.2rem;">Practice 21 Days</div><div style="font-size:0.72rem;color:var(--sage);">Real change needs minimum 21 days consistent practice</div></div>
+    </div>
+    <a href="prakriti.html#pdf-section" style="display:flex;gap:0.8rem;padding:0.8rem;border-radius:4px;background:var(--mist);border:1px solid rgba(107,143,94,0.15);text-decoration:none;">
+      <span style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--gold);min-width:1.5rem;">?</span>
+      <div><div style="font-family:'Cinzel',serif;font-size:0.82rem;color:var(--cream);margin-bottom:0.2rem;">Don't know your scores?</div><div style="font-size:0.72rem;color:var(--sage);">Download PDF assessment → fill it → return here</div></div>
+    </a>
+  </div>
+</div>
+
+<!-- ADMIN OVERLAY -->
+<div id="admin-overlay">
+  <div id="admin-login">
+    <h2>Admin Access</h2>
+    <input class="admin-pw-input" type="password" id="adminPw" placeholder="Enter password" onkeydown="if(event.key==='Enter')adminLogin()"/>
+    <button class="admin-login-btn" onclick="adminLogin()">Enter</button>
+    <div id="admin-err">Incorrect password</div>
+    <br/><br/>
+    <a href="#" onclick="closeAdmin()" style="font-size:0.78rem;color:var(--sage);">Cancel</a>
+  </div>
+  <div id="admin-panel-wrap" style="display:none;width:90%;max-width:700px;">
+    <div class="admin-panel" style="position:relative;">
+      <button class="admin-close" onclick="closeAdmin()">✕</button>
+      <h2>Admin Panel</h2>
+      <p>Website control centre — all changes apply live.</p>
+
+      <!-- TEXT CHANGES -->
+      <div class="admin-section">
+        <h3>📝 Change Text</h3>
+        <div class="admin-row">
+          <input class="admin-input" id="adm-heroTitle" placeholder="Hero title (Self-Treatment for a Healthy Body)"/>
+          <button class="admin-apply" onclick="applyText('heroTitleCustom',document.getElementById('adm-heroTitle').value)">Apply</button>
+        </div>
+        <div class="admin-row">
+          <input class="admin-input" id="adm-shlok" placeholder="Shlok text"/>
+          <button class="admin-apply" onclick="applyText('shlokCustom',document.getElementById('adm-shlok').value)">Apply</button>
+        </div>
+        <div class="admin-row">
+          <input class="admin-input" id="adm-tagline" placeholder="Sub tagline text"/>
+          <button class="admin-apply" onclick="applyText('taglineCustom',document.getElementById('adm-tagline').value)">Apply</button>
+        </div>
+        <div class="admin-row">
+          <input class="admin-input" id="adm-guideMsg" placeholder="Guide avatar message"/>
+          <button class="admin-apply" onclick="applyText('guideMsgCustom',document.getElementById('adm-guideMsg').value)">Apply</button>
+        </div>
+      </div>
+
+      <!-- ICON IMPORT -->
+      <div class="admin-section">
+        <h3>🎨 Import Icon / Logo</h3>
+        <div class="admin-row">
+          <input class="admin-input" id="adm-logoIcon" placeholder="Emoji or unicode symbol for logo icon"/>
+          <button class="admin-apply" onclick="applyIcon('logoIcon',document.getElementById('adm-logoIcon').value)">Apply</button>
+        </div>
+        <div class="admin-row">
+          <input class="admin-input" id="adm-guideIcon" placeholder="Guide avatar emoji"/>
+          <button class="admin-apply" onclick="applyIcon('guideIcon',document.getElementById('adm-guideIcon').value)">Apply</button>
+        </div>
+      </div>
+
+      <!-- BGM CHANGE -->
+      <div class="admin-section">
+        <h3>🎵 Background Music</h3>
+        <p style="font-size:0.78rem;color:var(--sage);margin-bottom:1rem;">Current: Generative sitar+flute. Upload a URL to an .mp3 or audio file to replace.</p>
+        <div class="admin-row">
+          <input class="admin-input" id="adm-bgmUrl" placeholder="https://your-audio-url.mp3"/>
+          <button class="admin-apply" onclick="applyBGM()">Apply</button>
+        </div>
+      </div>
+
+      <!-- DATA DOWNLOAD -->
+      <div class="admin-section">
+        <h3>📊 Download Website Data</h3>
+        <button class="admin-dl-btn" onclick="downloadData()">⬇ Download All User Data (JSON)</button>
+        <button class="admin-dl-btn" onclick="downloadCSV()">⬇ Download as CSV</button>
+      </div>
+
+      <!-- ANNOUNCEMENT -->
+      <div class="admin-section" style="border:none;">
+        <h3>📢 Add Announcement / Banner</h3>
+        <div class="admin-row">
+          <input class="admin-input" id="adm-announce" placeholder="Announcement text to show on homepage"/>
+          <button class="admin-apply" onclick="applyAnnounce()">Apply</button>
+        </div>
+        <p style="font-size:0.72rem;color:var(--sage);margin-top:0.5rem;">Appears as a banner below the nav bar.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOP LEFT USERS -->
+<div class="users-section">
+  <div class="users-heading">1st 3 Users of Svastha</div>
+  <div class="users-list" id="usersList">
+    <div class="top-user" onmouseenter="petalBurst(this)">i. Rani <span>+1 983 686 4010</span></div>
+    <div class="top-user" onmouseenter="petalBurst(this)">ii. Rajesh Kumar Sah</div>
+    <div class="top-user" onmouseenter="petalBurst(this)">iii. Anuradha Kumari</div>
+  </div>
+</div>
+
+<!-- ANNOUNCEMENT BAR -->
+<div id="announce-bar" style="display:none;position:fixed;top:64px;left:0;right:0;z-index:99;padding:0.6rem 2rem;background:rgba(160,105,58,0.2);border-bottom:1px solid rgba(160,105,58,0.3);text-align:center;">
+  <span id="announce-text" style="font-size:0.82rem;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:0.1em;"></span>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="lotus-icon" id="logoIconEl">🪷</div>
+    <div>
+      <div class="nav-logo-text">Svastha</div>
+      <span class="nav-logo-sub">Ancient Healing</span>
+    </div>
+  </div>
+  <div class="nav-links">
+    <a href="index.html" class="active">Home</a>
+    <a href="prakriti.html">Know Your Dosha</a>
+    <a href="heal.html">Self-Care</a>
+    <button class="admin-btn" onclick="openAdmin()">Admin</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="shlok-wrap">
+    <div class="shlok-dev" id="shlokEl">यथा पिण्डे तथा ब्रह्माण्डे</div>
+    <div class="shlok-line"></div>
+    <div class="shlok-eng">As is the body · So is the cosmos</div>
+  </div>
+  <h1 class="hero-title" id="heroTitleEl">Self-Treatment<br/><span>for a Healthy Body</span></h1>
+  <p class="hero-sub" id="taglineEl">5,00,000 years of Vedic intelligence — decoded for your constitution, your life, your healing.</p>
+  <div class="hero-btns">
+    <a href="prakriti.html" class="btn-primary">Discover Your Prakriti</a>
+  </div>
+</section>
+
+<!-- LOTUS ANIMATION + INTRO CARDS -->
+<section id="lotus-anim">
+  <div class="lotus-canvas-wrap">
+    <div class="lotus-ring"></div>
+    <div class="lotus-ring"></div>
+    <div class="lotus-ring"></div>
+    <div class="lotus-center">🪷</div>
+  </div>
+  <div class="mobius-lines">
+    <div class="mobius-line"></div>
+    <div class="mobius-line"></div>
+    <div class="mobius-line"></div>
+  </div>
+  <div class="intro-cards reveal">
+    <div class="intro-card"><div class="intro-card-icon">🌬</div><div class="intro-card-title">Vāta — Air + Space</div><p>Movement, creativity, breath, nervous system. The force that drives all biological motion in the body.</p></div>
+    <div class="intro-card"><div class="intro-card-icon">🔥</div><div class="intro-card-title">Pitta — Fire + Water</div><p>Digestion, metabolism, intelligence, transformation. The force that converts experience into energy.</p></div>
+    <div class="intro-card"><div class="intro-card-icon">🌿</div><div class="intro-card-title">Kapha — Earth + Water</div><p>Structure, memory, immunity, stability. The force that holds the body together across time.</p></div>
+  </div>
+</section>
+
+<!-- INTRO -->
+<section id="intro">
+  <div class="intro-text reveal">
+    <h2>What is<br/>Svastha?</h2>
+    <p>In Sanskrit, <em>Svastha</em> means to be established in oneself — not merely the absence of disease, but a state of complete alignment between body, mind, and the rhythms of nature.</p>
+    <p>This platform bridges 5,00,000-year-old Vedic intelligence with your body's unique biological constitution. No generic advice. Only knowledge built for you.</p>
+    <p>The universe runs on three forces. So does your body. Know yours — and everything changes.</p>
+  </div>
+  <div class="pillars reveal">
+    <div class="pillar"><div class="pillar-title">🔬 Constitution-Based</div><p>Every recommendation is rooted in your unique Vata-Pitta-Kapha balance — not population averages.</p></div>
+    <div class="pillar"><div class="pillar-title">📿 5,00,000 Years Deep</div><p>Vedic Rishi knowledge — Charaka, Sushruta, Ashtanga Hridayam — the original precision medicine of the universe.</p></div>
+    <div class="pillar"><div class="pillar-title">🌿 No Prescriptions</div><p>Food, rhythm, breath, sleep, movement — the body heals itself when you stop working against it.</p></div>
+  </div>
+</section>
+
+<!-- ASSOCIATES -->
+<section id="associates">
+  <span class="assoc-label">Aligned with</span>
+  <div class="assoc-logos">
+    <a href="https://www.who.int/health-topics/traditional-complementary-and-integrative-medicine" target="_blank" class="assoc-link"><div class="assoc-icon">🌐</div><span>WHO</span></a>
+    <a href="https://www.ayurveda.org" target="_blank" class="assoc-link"><div class="assoc-icon">🌿</div><span>Ayurveda.org</span></a>
+  </div>
+</section>
+
+<!-- STATS -->
+<section id="stats">
+  <div class="stat-item reveal"><span class="stat-num" id="visitCount">—</span><span class="stat-label">Visits</span></div>
+  <div class="stat-item reveal"><span class="stat-num" id="doshaCount">—</span><span class="stat-label">Doshas Analysed</span></div>
+  <div class="stat-item reveal"><span class="stat-num">3,000+</span><span class="stat-label">Dosha Combinations</span></div>
+  <div class="stat-item reveal"><span class="stat-num">5,00,000</span><span class="stat-label">Years of Wisdom</span></div>
+</section>
+
+<!-- FOUNDERS -->
+<section id="founders">
+  <p class="section-eyebrow">The Team</p>
+  <div class="founders-wrap">
+    <div class="founder-item"><span class="founder-role">Co-Founder</span><span class="founder-name">Vishal Chaurasia</span></div>
+    <div class="founder-divider"></div>
+    <div class="founder-item"><span class="founder-role">Made by</span><span class="founder-name secondary">Sanat Kumar</span></div>
+  </div>
+</section>
+
+<!-- TRI-GUNA -->
+<section id="triguna">
+  <p class="section-eyebrow">The Three Forces of Existence</p>
+  <h2 class="section-title reveal">Tri-Guna</h2>
+  <p class="section-sub reveal">Beyond the body — the three qualities that govern all of consciousness, matter, and the cosmos itself</p>
+  <div class="guna-cards">
+    <div class="guna-card sattva reveal"><div class="guna-symbol">☀</div><div class="guna-name">Sattva</div><div class="guna-element">Purity · Clarity · Light</div><p class="guna-desc">The healing state. When Sattva dominates — the body repairs, the mind clarifies, and true health emerges naturally.</p></div>
+    <div class="guna-card rajas reveal"><div class="guna-symbol">🔥</div><div class="guna-name">Rajas</div><div class="guna-element">Activity · Passion · Motion</div><p class="guna-desc">The driving force. Rajas initiates change — but without Sattva, it becomes the source of disease through restlessness.</p></div>
+    <div class="guna-card tamas reveal"><div class="guna-symbol">🌑</div><div class="guna-name">Tamas</div><div class="guna-element">Inertia · Darkness · Rest</div><p class="guna-desc">The resting state. Necessary for sleep and recovery — but in excess, creates stagnation and the root of chronic disease.</p></div>
+  </div>
+</section>
+
+<!-- WEBAPP TEASER -->
+<section id="webapp-teaser">
+  <div class="teaser-petals" id="teaserPetals"></div>
+  <span class="teaser-rishi">🧘‍♂️</span>
+  <h2 class="teaser-title">Svastha Web App</h2>
+  <p class="teaser-sub">The Rishi within the machine — a complete living intelligence system that knows your constitution, tracks your evolution, and guides your healing across seasons and lifetimes.</p>
+  <div class="teaser-features">
+    <div class="teaser-feat">Tri-Guna Tracking</div>
+    <div class="teaser-feat">AI Constitution Analysis</div>
+    <div class="teaser-feat">Seasonal Dosha Protocols</div>
+    <div class="teaser-feat">Personalised Healing Journeys</div>
+    <div class="teaser-feat">Vedic Daily Rhythm Engine</div>
+  </div>
+  <div class="cs-badge"><div class="cs-dot"></div>Coming Soon</div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">🪷 Svastha</div>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="prakriti.html">Know Your Dosha</a>
+    <a href="heal.html">Self-Care</a>
+    <a href="https://www.who.int" target="_blank">WHO</a>
+    <a href="https://www.ayurveda.org" target="_blank">Ayurveda.org</a>
+  </div>
+  <div class="footer-copy">© 2026 Svastha · Made by Sanat Kumar</div>
+</footer>
+
+<!-- ADVANCE BAR -->
+<div class="advance-bar">
+  <span>Be Advance on Your Basic Level</span>
+</div>
+
+<script>
+// ── LOADER
+window.addEventListener('load',()=>{setTimeout(()=>document.getElementById('loader').classList.add('hidden'),2800);});
+
+// ── PARTICLES
+(function(){for(let i=0;i<20;i++){const p=document.createElement('div');p.className='particle';const sz=Math.random()*3+1.5;const colors=['var(--gold)','var(--lotus)','var(--sage)'];p.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;background:${colors[Math.floor(Math.random()*3)]};animation-duration:${Math.random()*18+10}s;animation-delay:${Math.random()*12}s;opacity:${Math.random()*0.12+0.04};`;document.getElementById('hero').appendChild(p);}})();
+
+// ── TEASER PETALS
+(function(){const c=document.getElementById('teaserPetals');const petals=['🌸','🌺','🌼','🌻','🪷'];for(let i=0;i<15;i++){const p=document.createElement('div');p.className='t-petal';p.textContent=petals[Math.floor(Math.random()*petals.length)];p.style.cssText=`left:${Math.random()*100}%;animation-duration:${4+Math.random()*6}s;animation-delay:${Math.random()*8}s;font-size:${0.8+Math.random()*0.8}rem;`;c.appendChild(p);}})();
+
+// ── PUSHP WARSHA — hover + auto every 3s
+function petalBurst(el){
+  const petals=['🌸','🌺','🌼','🪷','🌹','✿','❀'];
+  for(let i=0;i<8;i++){
+    const p=document.createElement('div');
+    p.className='petal';
+    p.textContent=petals[Math.floor(Math.random()*petals.length)];
+    p.style.cssText=`left:${Math.random()*80}px;top:${Math.random()*5}px;animation-duration:${0.9+Math.random()*0.8}s;animation-delay:${Math.random()*0.3}s;font-size:${0.8+Math.random()*0.5}rem;`;
+    el.appendChild(p);
+    setTimeout(()=>p.remove(),1600);
+  }
+}
+// hover
+document.querySelectorAll('.top-user').forEach(u=>{u.addEventListener('mouseenter',()=>petalBurst(u));});
+// auto every 3s
+(function(){const users=document.querySelectorAll('.top-user');let idx=0;setInterval(()=>{if(users.length){petalBurst(users[idx%users.length]);idx++;}},3000);})();
+
+// ── INTRO PETALS
+(function(){const c=document.getElementById('intro-petals');if(!c)return;const p=['🌸','🌺','🌼','🌻','🪷'];for(let i=0;i<20;i++){const el=document.createElement('div');el.style.cssText=`position:absolute;top:-20px;font-size:${0.9+Math.random()*0.8}rem;left:${Math.random()*100}%;animation:teaser-fall ${5+Math.random()*7}s linear ${Math.random()*8}s infinite;opacity:0;`;el.textContent=p[Math.floor(Math.random()*p.length)];c.appendChild(el);}})();
+
+// ── INTRO SCREEN
+let curIStep=0;
+const TOTAL_STEPS=5;
+function buildIntroDots(){
+  const el=document.getElementById('intro-dots');
+  if(!el)return;
+  el.innerHTML='';
+  for(let i=0;i<TOTAL_STEPS;i++){
+    const d=document.createElement('div');
+    d.style.cssText=`width:${i===curIStep?'24':'8'}px;height:8px;border-radius:${i===curIStep?'4':'50%'}px;background:${i===curIStep?'var(--gold)':'rgba(255,255,255,0.2)'};transition:all 0.3s;`;
+    el.appendChild(d);
+  }
+}
+buildIntroDots();
+function nextIStep(){
+  const cur=document.getElementById('istep'+curIStep);
+  if(cur)cur.style.display='none';
+  curIStep++;
+  if(curIStep>=TOTAL_STEPS){skipIntro();return;}
+  const next=document.getElementById('istep'+curIStep);
+  if(next){next.style.display='flex';next.style.animation='fadeInUp 0.5s ease';}
+  buildIntroDots();
+}
+function skipIntro(){
+  const s=document.getElementById('intro-screen');
+  if(s){s.style.opacity='0';s.style.visibility='hidden';setTimeout(()=>s.style.display='none',800);}
+  localStorage.setItem('sv_intro_seen','1');
+}
+// Show only on first visit
+if(localStorage.getItem('sv_intro_seen')){
+  const s=document.getElementById('intro-screen');
+  if(s)s.style.display='none';
+}
+
+// ── GUIDE
+let guideOpen=false;
+function toggleGuide(){
+  guideOpen=!guideOpen;
+  const p=document.getElementById('guide-panel');
+  if(p)p.style.display=guideOpen?'block':'none';
+}
+document.addEventListener('click',e=>{
+  const g=document.getElementById('guide');
+  const gp=document.getElementById('guide-panel');
+  if(g&&gp&&!g.contains(e.target)&&!gp.contains(e.target)){
+    gp.style.display='none';guideOpen=false;
+  }
+});
+
+// ── LANGUAGE
+const LANG_DATA={
+  en:{hero:'Self-Treatment<br/><span>for a Healthy Body</span>',tag:'5,00,000 years of Vedic intelligence — decoded for your constitution, your life, your healing.'},
+  hi:{hero:'स्व-चिकित्सा<br/><span>स्वस्थ शरीर के लिए</span>',tag:'५,००,००० वर्षों की वैदिक बुद्धि — आपकी प्रकृति के लिए।'},
+  sk:{hero:'स्वस्थ-चिकित्सा<br/><span>आरोग्यशरीराय</span>',tag:'पञ्चलक्षवर्षाणां वैदिकज्ञानम् — भवतः प्रकृत्यर्थम्।'}
+};
+function setLang(l){
+  const T=LANG_DATA[l];
+  const htEl=document.getElementById('heroTitleEl');
+  const tgEl=document.getElementById('taglineEl');
+  if(htEl&&T)htEl.innerHTML=T.hero;
+  if(tgEl&&T)tgEl.textContent=T.tag;
+  ['en','hi','sk'].forEach(lang=>{
+    const b=document.getElementById('lang-'+lang);
+    if(b)Object.assign(b.style,{background:lang===l?'rgba(200,149,42,0.15)':'transparent',border:lang===l?'1px solid rgba(200,149,42,0.4)':'1px solid rgba(107,143,94,0.2)',color:lang===l?'var(--gold)':'rgba(244,237,224,0.4)'});
+  });
+  localStorage.setItem('sv_lang',l);
+}
+const savedLang=localStorage.getItem('sv_lang');
+if(savedLang&&savedLang!=='en')setLang(savedLang);
+
+// ── STATS
+const visits=parseInt(localStorage.getItem('sv_visits')||'0')+1;
+localStorage.setItem('sv_visits',visits);
+const doshaCount=parseInt(localStorage.getItem('sv_doshas')||'0');
+function animateCount(el,target,duration){let s=0;const step=target/(duration/16);const t=setInterval(()=>{s+=step;if(s>=target){el.textContent=target.toLocaleString();clearInterval(t);return;}el.textContent=Math.floor(s).toLocaleString();},16);}
+setTimeout(()=>{animateCount(document.getElementById('visitCount'),visits,1200);animateCount(document.getElementById('doshaCount'),doshaCount,1200);},3000);
+
+// ── SCROLL REVEAL
+const observer=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+
+// ── ADMIN
+const ADMIN_PASS='NISHKAM-KARMO.3';
+function openAdmin(){document.getElementById('admin-overlay').classList.add('show');}
+function closeAdmin(){document.getElementById('admin-overlay').classList.remove('show');}
+function adminLogin(){
+  const pw=document.getElementById('adminPw').value;
+  if(pw===ADMIN_PASS){
+    document.getElementById('admin-login').style.display='none';
+    document.getElementById('admin-panel-wrap').style.display='block';
+    document.getElementById('admin-err').style.display='none';
+  }else{
+    document.getElementById('admin-err').style.display='block';
+    document.getElementById('adminPw').value='';
+  }
+}
+function applyText(key,val){if(!val)return;localStorage.setItem(key,val);loadAdminCustoms();}
+function applyIcon(key,val){if(!val)return;localStorage.setItem(key,val);loadAdminCustoms();}
+function applyBGM(){
+  const url=document.getElementById('adm-bgmUrl').value;
+  if(!url)return;
+  localStorage.setItem('sv_bgm_url',url);
+  const audio=new Audio(url);
+  audio.loop=true;audio.volume=0.15;audio.play();
+  alert('BGM updated. Refresh to apply globally.');
+}
+function applyAnnounce(){
+  const txt=document.getElementById('adm-announce').value;
+  if(!txt)return;
+  localStorage.setItem('sv_announce',txt);
+  document.getElementById('announce-text').textContent=txt;
+  document.getElementById('announce-bar').style.display='block';
+}
+function downloadData(){
+  const data={visits:localStorage.getItem('sv_visits'),doshas_analysed:localStorage.getItem('sv_doshas'),user_dosha:localStorage.getItem('sv_dosha'),timestamp:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='svastha_data.json';a.click();
+}
+function downloadCSV(){
+  const rows=[['Key','Value'],['visits',localStorage.getItem('sv_visits')],['doshas_analysed',localStorage.getItem('sv_doshas')],['user_dosha',localStorage.getItem('sv_dosha')],['timestamp',new Date().toISOString()]];
+  const csv=rows.map(r=>r.join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='svastha_data.csv';a.click();
+}
+function loadAdminCustoms(){
+  const ht=localStorage.getItem('heroTitleCustom');if(ht){const el=document.getElementById('heroTitleEl');if(el)el.innerHTML=ht;}
+  const sh=localStorage.getItem('shlokCustom');if(sh){const el=document.getElementById('shlokEl');if(el)el.textContent=sh;}
+  const tg=localStorage.getItem('taglineCustom');if(tg){const el=document.getElementById('taglineEl');if(el)el.textContent=tg;}
+  const gm=localStorage.getItem('guideMsgCustom');if(gm){GUIDE_MSGS[0]=gm;}
+  const li=localStorage.getItem('logoIcon');if(li){const el=document.getElementById('logoIconEl');if(el)el.textContent=li;}
+  const gi=localStorage.getItem('guideIcon');if(gi){const el=document.querySelector('.guide-aura');if(el)el.textContent=gi;}
+  const an=localStorage.getItem('sv_announce');if(an){document.getElementById('announce-text').textContent=an;document.getElementById('announce-bar').style.display='block';}
+}
+loadAdminCustoms();
+</script>
+</body>
+</html>

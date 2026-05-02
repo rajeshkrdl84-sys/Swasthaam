@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Self-Care — Svastha</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Nunito+Sans:wght@300;400;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--forest:#1a2e1a;--moss:#3d5c2e;--sage:#6b8f5e;--bronze:#a0693a;--gold:#c8952a;--cream:#f4ede0;--bark:#2c1f0e;--leaf:#4a7a3d;--mist:rgba(255,255,255,0.06);}
+*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+body{background:var(--forest);color:var(--cream);font-family:'Nunito Sans',sans-serif;overflow-x:hidden;}
+#loader{position:fixed;inset:0;z-index:9999;background:var(--bark);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.8s ease,visibility 0.8s ease;}
+#loader.hidden{opacity:0;visibility:hidden;pointer-events:none;}
+.loader-lotus{font-size:4rem;animation:spin-slow 4s linear infinite;filter:drop-shadow(0 0 20px rgba(212,88,122,0.6));}
+.loader-bar{width:200px;height:2px;background:rgba(255,255,255,0.08);margin-top:1.5rem;border-radius:2px;overflow:hidden;}
+.loader-bar-fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--bronze));animation:load-fill 2.2s ease forwards;}
+.loader-text{font-family:'EB Garamond',serif;font-size:0.85rem;letter-spacing:0.35em;color:var(--sage);margin-top:1rem;text-transform:uppercase;}
+@keyframes spin-slow{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+@keyframes load-fill{0%{width:0}100%{width:100%}}
+#bgm-btn{position:fixed;bottom:2rem;right:2rem;z-index:200;width:44px;height:44px;border-radius:50%;background:rgba(26,46,26,0.85);border:1px solid rgba(200,149,42,0.4);color:var(--gold);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all 0.3s;}
+#bgm-btn.playing{animation:pulse-ring 2s ease infinite;}
+@keyframes pulse-ring{0%,100%{box-shadow:0 0 0 0 rgba(200,149,42,0.4)}50%{box-shadow:0 0 0 8px rgba(200,149,42,0)}}
+nav{position:fixed;top:28px;left:0;right:0;z-index:100;padding:1rem 3rem;display:flex;justify-content:space-between;align-items:center;background:rgba(26,46,26,0.88);backdrop-filter:blur(14px);border-bottom:1px solid rgba(107,143,94,0.18);}
+.nav-logo{display:flex;align-items:center;gap:0.7rem;}
+.lotus-icon{font-size:1.8rem;animation:lotus-pulse 3s ease-in-out infinite;}
+@keyframes lotus-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.nav-logo-text{font-family:'Cinzel',serif;font-size:1.4rem;color:var(--gold);}
+.nav-links{display:flex;gap:2.5rem;}
+.nav-links a{font-size:0.82rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--sage);text-decoration:none;transition:color 0.3s;}
+.nav-links a:hover,.nav-links a.active{color:var(--gold);}
+.page-hero{min-height:40vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8rem 2rem 3rem;position:relative;overflow:hidden;}
+.page-hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(61,92,46,0.22) 0%,transparent 70%);}
+.page-hero h1{font-family:'Cinzel',serif;font-size:clamp(2.5rem,6vw,5rem);font-weight:900;color:var(--cream);position:relative;z-index:1;}
+.page-hero h1 span{color:var(--gold);}
+.page-hero p{font-family:'EB Garamond',serif;font-style:italic;font-size:1.1rem;color:var(--sage);margin-top:1rem;position:relative;z-index:1;max-width:540px;}
+
+main{max-width:900px;margin:0 auto;padding:4rem 2rem 2rem;}
+
+/* DOSHA STATUS */
+.dosha-status{padding:1.5rem 2rem;background:rgba(255,255,255,0.04);border:1px solid rgba(107,143,94,0.2);border-radius:2px;margin-bottom:2rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;}
+.ds-left span{font-size:0.72rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--bronze);display:block;margin-bottom:0.3rem;}
+.ds-prakriti{font-family:'Cinzel',serif;font-size:1.2rem;color:var(--gold);}
+.ds-scores{display:flex;gap:1.5rem;}
+.ds-score{text-align:center;}
+.ds-score-val{font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;}
+.ds-score-val.v{color:#7ab3d4;}.ds-score-val.p{color:#e07a3a;}.ds-score-val.k{color:#5e9e6b;}
+.ds-score-label{font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--sage);}
+.ds-btn{padding:0.6rem 1.5rem;background:transparent;border:1px solid rgba(200,149,42,0.3);color:var(--gold);font-family:'Cinzel',serif;font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;text-decoration:none;border-radius:2px;transition:all 0.3s;}
+.ds-btn:hover{background:rgba(200,149,42,0.1);}
+
+/* INPUT */
+.input-section{background:rgba(255,255,255,0.04);border:1px solid rgba(107,143,94,0.2);border-radius:4px;padding:3rem;margin-bottom:2rem;}
+.input-section h2{font-family:'Cinzel',serif;font-size:1.8rem;color:var(--gold);margin-bottom:0.5rem;}
+.input-section>p{color:var(--sage);font-size:0.88rem;margin-bottom:2rem;line-height:1.6;}
+.problem-tags{display:flex;flex-wrap:wrap;gap:0.7rem;margin-bottom:2rem;}
+.prob-tag{padding:0.5rem 1.1rem;background:rgba(255,255,255,0.04);border:1px solid rgba(107,143,94,0.2);color:var(--sage);font-size:0.78rem;letter-spacing:0.1em;cursor:pointer;border-radius:2px;transition:all 0.3s;user-select:none;}
+.prob-tag:hover,.prob-tag.selected{background:rgba(61,92,46,0.3);border-color:var(--gold);color:var(--gold);}
+.problem-input{width:100%;padding:1.2rem 1.5rem;background:rgba(255,255,255,0.04);border:1px solid rgba(107,143,94,0.2);border-radius:2px;color:var(--cream);font-family:'EB Garamond',serif;font-size:1.05rem;resize:vertical;min-height:100px;outline:none;transition:border-color 0.3s;margin-bottom:1.5rem;}
+.problem-input::placeholder{color:rgba(244,237,224,0.3);}
+.problem-input:focus{border-color:rgba(200,149,42,0.4);}
+.heal-btn{display:block;width:100%;padding:1.2rem;background:linear-gradient(135deg,var(--moss),var(--leaf));color:var(--cream);font-family:'Cinzel',serif;font-size:1rem;letter-spacing:0.2em;text-transform:uppercase;border:none;border-radius:2px;cursor:pointer;transition:all 0.3s;box-shadow:0 4px 20px rgba(61,92,46,0.4);}
+.heal-btn:hover{transform:translateY(-2px);}
+.heal-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+
+/* PLAN */
+#plan{display:none;margin-top:2.5rem;}
+#plan.visible{display:block;animation:fadeInUp 0.7s ease;}
+.plan-header{text-align:center;padding:2.5rem;background:rgba(255,255,255,0.04);border:1px solid rgba(107,143,94,0.2);border-radius:4px;margin-bottom:2rem;}
+.plan-header h3{font-family:'Cinzel',serif;font-size:1.2rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--sage);margin-bottom:0.5rem;}
+.plan-title{font-family:'Cinzel',serif;font-size:2rem;color:var(--gold);margin-bottom:0.5rem;}
+.plan-sub{font-family:'EB Garamond',serif;font-style:italic;font-size:1rem;color:var(--sage);}
+
+.plan-section{margin-bottom:2rem;}
+.plan-section-title{font-family:'Cinzel',serif;font-size:1rem;color:var(--gold);letter-spacing:0.15em;margin-bottom:1rem;display:flex;align-items:center;gap:0.7rem;}
+.plan-items{display:flex;flex-direction:column;gap:0.8rem;}
+.plan-item{display:grid;grid-template-columns:auto 1fr auto;gap:1.2rem;align-items:start;padding:1.2rem 1.5rem;background:rgba(255,255,255,0.04);border:1px solid rgba(107,143,94,0.12);border-radius:2px;}
+.plan-item:hover{background:rgba(255,255,255,0.07);}
+.plan-item-time{font-family:'Cinzel',serif;font-size:0.8rem;color:var(--gold);white-space:nowrap;padding-top:0.1rem;}
+.plan-item-name{font-size:0.92rem;color:var(--cream);margin-bottom:0.3rem;}
+.plan-item-why{font-size:0.78rem;color:var(--sage);font-family:'EB Garamond',serif;font-style:italic;line-height:1.5;}
+.plan-check{width:26px;height:26px;border-radius:50%;border:2px solid rgba(107,143,94,0.3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.3s;font-size:0.75rem;flex-shrink:0;}
+.plan-check:hover,.plan-check.done{background:var(--leaf);border-color:var(--leaf);color:var(--cream);}
+
+/* MUDRA SECTION */
+.mudra-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;margin-top:0.5rem;}
+.mudra-card{padding:1.5rem;background:rgba(255,255,255,0.04);border:1px solid rgba(107,143,94,0.18);border-radius:2px;text-align:center;}
+.mudra-symbol{font-size:2.5rem;margin-bottom:0.8rem;}
+.mudra-name{font-family:'Cinzel',serif;font-size:0.9rem;color:var(--gold);margin-bottom:0.4rem;}
+.mudra-how{font-size:0.75rem;color:var(--sage);margin-bottom:0.4rem;line-height:1.5;}
+.mudra-benefit{font-size:0.72rem;color:rgba(244,237,224,0.6);font-family:'EB Garamond',serif;font-style:italic;}
+
+.warning-box{padding:1.5rem 2rem;background:rgba(160,105,58,0.1);border:1px solid rgba(160,105,58,0.3);border-left:3px solid var(--bronze);border-radius:2px;margin-bottom:2rem;}
+.warning-box h4{font-family:'Cinzel',serif;font-size:0.9rem;color:var(--bronze);margin-bottom:0.8rem;}
+.warning-box ul{list-style:none;display:flex;flex-direction:column;gap:0.5rem;}
+.warning-box ul li{font-size:0.82rem;color:rgba(244,237,224,0.75);padding-left:1rem;position:relative;}
+.warning-box ul li::before{content:'✗';position:absolute;left:0;color:var(--bronze);}
+
+/* TASTE FOOD SECTION */
+.taste-suggestion{padding:1.5rem 2rem;background:var(--mist);border:1px solid rgba(107,143,94,0.18);border-radius:2px;margin-bottom:1rem;}
+.taste-suggestion h5{font-family:'Cinzel',serif;font-size:0.88rem;color:var(--gold);margin-bottom:0.8rem;letter-spacing:0.1em;}
+.taste-tags-row{display:flex;flex-wrap:wrap;gap:0.5rem;}
+.tt{padding:0.35rem 0.8rem;border-radius:2px;font-size:0.75rem;letter-spacing:0.08em;}
+.tt.eat{background:rgba(74,122,61,0.15);border:1px solid rgba(74,122,61,0.3);color:#5e9e6b;}
+.tt.avoid{background:rgba(224,122,58,0.1);border:1px solid rgba(224,122,58,0.25);color:#e07a3a;}
+
+.print-btn{display:inline-flex;align-items:center;gap:0.8rem;padding:0.9rem 2rem;background:rgba(160,105,58,0.15);border:1px solid var(--bronze);color:var(--bronze);font-family:'Cinzel',serif;font-size:0.78rem;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all 0.3s;margin-top:1rem;}
+.print-btn:hover{background:rgba(160,105,58,0.25);}
+
+/* TRI-GUNA BOTTOM */
+#triguna-bottom{padding:5rem 2rem 4rem;text-align:center;border-top:1px solid rgba(107,143,94,0.12);margin-top:4rem;}
+.section-eyebrow{font-size:0.72rem;letter-spacing:0.4em;text-transform:uppercase;color:var(--bronze);margin-bottom:1rem;}
+.section-title{font-family:'Cinzel',serif;font-size:2rem;color:var(--cream);margin-bottom:0.8rem;}
+.section-sub{font-family:'EB Garamond',serif;font-style:italic;font-size:1rem;color:var(--sage);margin-bottom:3rem;max-width:480px;margin-left:auto;margin-right:auto;}
+.guna-cards{display:flex;justify-content:center;gap:1.5rem;flex-wrap:wrap;margin-bottom:3.5rem;}
+.guna-card{width:220px;padding:2rem 1.8rem;background:var(--mist);border:1px solid rgba(107,143,94,0.15);border-radius:2px;text-align:center;transition:all 0.4s;}
+.guna-card:hover{transform:translateY(-8px);}
+.guna-card.sattva{border-top:3px solid #c8e6c9;}
+.guna-card.rajas{border-top:3px solid var(--bronze);}
+.guna-card.tamas{border-top:3px solid #546e7a;}
+.guna-symbol{font-size:2.2rem;margin-bottom:0.8rem;}
+.guna-name{font-family:'Cinzel',serif;font-size:1.2rem;margin-bottom:0.3rem;}
+.guna-card.sattva .guna-name{color:#c8e6c9;}
+.guna-card.rajas .guna-name{color:var(--bronze);}
+.guna-card.tamas .guna-name{color:#90a4ae;}
+.guna-element{font-size:0.68rem;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:0.8rem;opacity:0.5;}
+.guna-desc{font-size:0.8rem;color:rgba(244,237,224,0.6);line-height:1.6;}
+
+.coming-soon-wrap{padding:3rem;background:rgba(255,255,255,0.03);border:1px solid rgba(107,143,94,0.18);border-radius:4px;max-width:560px;margin:0 auto;}
+.cs-eyebrow{font-size:0.68rem;letter-spacing:0.4em;text-transform:uppercase;color:var(--bronze);margin-bottom:1rem;}
+.cs-title{font-family:'Cinzel',serif;font-size:1.8rem;color:var(--gold);margin-bottom:0.8rem;}
+.cs-sub{font-family:'EB Garamond',serif;font-style:italic;font-size:1rem;color:var(--sage);margin-bottom:2rem;line-height:1.7;}
+.cs-features{display:flex;flex-direction:column;gap:0.6rem;margin-bottom:2rem;}
+.cs-feature{font-size:0.82rem;color:rgba(244,237,224,0.65);display:flex;align-items:center;gap:0.8rem;}
+.cs-feature::before{content:'◦';color:var(--gold);}
+.cs-badge{display:inline-flex;align-items:center;gap:0.6rem;padding:0.6rem 1.5rem;background:rgba(200,149,42,0.1);border:1px solid rgba(200,149,42,0.3);border-radius:2px;font-family:'Cinzel',serif;font-size:0.8rem;letter-spacing:0.2em;color:var(--gold);animation:badge-pulse 2s ease-in-out infinite;}
+@keyframes badge-pulse{0%,100%{box-shadow:0 0 0 0 rgba(200,149,42,0.3)}50%{box-shadow:0 0 0 10px rgba(200,149,42,0)}}
+.cs-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);animation:dot-blink 1.2s ease-in-out infinite;}
+@keyframes dot-blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.3;transform:scale(0.6)}}
+
+.advance-bar{padding:1.2rem;text-align:center;background:rgba(0,0,0,0.3);border-top:1px solid rgba(107,143,94,0.15);}
+.advance-bar span{font-family:'Cinzel',serif;font-size:0.78rem;letter-spacing:0.3em;text-transform:uppercase;color:rgba(200,149,42,0.5);animation:advance-glow 4s ease-in-out infinite;}
+@keyframes advance-glow{0%,100%{opacity:0.5;letter-spacing:0.3em}50%{opacity:1;letter-spacing:0.4em;color:var(--gold)}}
+footer{padding:2.5rem 5rem;border-top:1px solid rgba(107,143,94,0.12);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;}
+.footer-logo{font-family:'Cinzel',serif;font-size:1rem;color:var(--gold);}
+.footer-links{display:flex;gap:2rem;}
+.footer-links a{font-size:0.78rem;color:var(--sage);text-decoration:none;transition:color 0.3s;}
+.footer-links a:hover{color:var(--gold);}
+.footer-copy{font-size:0.72rem;color:rgba(244,237,224,0.25);}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.reveal{opacity:0;transform:translateY(40px);transition:opacity 0.8s ease,transform 0.8s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+.loading-dots::after{content:'...';animation:dots 1.2s steps(4,end) infinite;}
+@keyframes dots{0%,100%{content:'.'}33%{content:'..'}66%{content:'...'}}
+@media(max-width:768px){nav{padding:1rem 1.5rem;}.nav-links{gap:1.2rem;}.dosha-status{flex-direction:column;}.mudra-grid{grid-template-columns:1fr 1fr;}.guna-cards{flex-direction:column;align-items:center;}footer{flex-direction:column;text-align:center;padding:2rem;}}
+</style>
+</head>
+<body>
+<!-- LANG BAR -->
+<div style="position:fixed;top:0;left:0;right:0;z-index:101;display:flex;justify-content:flex-end;align-items:center;padding:0.3rem 3rem;background:rgba(10,20,10,0.7);border-bottom:1px solid rgba(107,143,94,0.12);backdrop-filter:blur(8px);"><button onclick="window.location.href='index.html'" style="font-size:0.7rem;padding:0.2rem 0.7rem;background:transparent;border:1px solid rgba(107,143,94,0.2);color:rgba(244,237,224,0.4);cursor:pointer;border-radius:2px;font-family:Cinzel,serif;margin-right:0.5rem;">🏠 Home</button></div>
+<div id="loader"><div class="loader-lotus">🪷</div><div class="loader-bar"><div class="loader-bar-fill"></div></div><div class="loader-text">Preparing your healing</div></div>
+<button id="bgm-btn" onclick="toggleBGM()" title="Toggle ambient music">♪</button>
+<script>
+let audioCtx,gainNode,bgmOn=false;
+function createBGM(){audioCtx=new(window.AudioContext||window.webkitAudioContext)();gainNode=audioCtx.createGain();gainNode.gain.setValueAtTime(0.07,audioCtx.currentTime);gainNode.connect(audioCtx.destination);const freqs=[196,220,261.6,329.6,392,440,523.2];function pluck(){if(!bgmOn)return;const f=freqs[Math.floor(Math.random()*freqs.length)];const osc=audioCtx.createOscillator();const g=audioCtx.createGain();osc.type='sawtooth';osc.frequency.setValueAtTime(f,audioCtx.currentTime);g.gain.setValueAtTime(0.12,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+2.5);osc.connect(g);g.connect(gainNode);osc.start();osc.stop(audioCtx.currentTime+2.5);setTimeout(pluck,700+Math.random()*1400);}function flute(){if(!bgmOn)return;const ff=[261.6,329.6,392][Math.floor(Math.random()*3)];const osc=audioCtx.createOscillator();const g=audioCtx.createGain();osc.type='sine';osc.frequency.setValueAtTime(ff,audioCtx.currentTime);g.gain.setValueAtTime(0,audioCtx.currentTime);g.gain.linearRampToValueAtTime(0.1,audioCtx.currentTime+0.8);g.gain.linearRampToValueAtTime(0,audioCtx.currentTime+4);osc.connect(g);g.connect(gainNode);osc.start();osc.stop(audioCtx.currentTime+4);setTimeout(flute,3500+Math.random()*3000);}pluck();flute();}
+function toggleBGM(){const btn=document.getElementById('bgm-btn');if(!bgmOn){bgmOn=true;if(!audioCtx)createBGM();else audioCtx.resume();gainNode.gain.setValueAtTime(0.07,audioCtx.currentTime);btn.textContent='♫';btn.classList.add('playing');}else{bgmOn=false;gainNode.gain.setValueAtTime(0,audioCtx.currentTime);btn.textContent='♪';btn.classList.remove('playing');}}
+</script>
+<nav>
+  <div class="nav-logo"><div class="lotus-icon">🪷</div><div class="nav-logo-text">Svastha</div></div>
+  <div class="nav-links"><a href="index.html">Home</a><a href="prakriti.html">Know Your Dosha</a><a href="heal.html" class="active">Self-Care</a></div>
+</nav>
+<div class="page-hero"><div class="page-hero-bg"></div><h1>Heal <span>Yourself</span></h1><p>Tell us your problem — your dosha constitution already knows the solution</p></div>
+
+<main>
+  <div class="dosha-status" id="doshaStatus"></div>
+
+  <div class="input-section reveal">
+    <h2>What Do You Want to Heal?</h2>
+    <p>Select a concern or describe your problem. Your plan will be built around your exact Vata-Pitta-Kapha constitution — with specific mudras, meditation, taste-based food guidance, and cosmic order practices.</p>
+    <div class="problem-tags">
+      <div class="prob-tag" onclick="selectTag(this,'insomnia — cannot sleep or sleep is light and broken')">Insomnia</div>
+      <div class="prob-tag" onclick="selectTag(this,'anxiety and overthinking — mind will not stop')">Anxiety</div>
+      <div class="prob-tag" onclick="selectTag(this,'weight gain — slow metabolism and difficulty losing fat')">Weight Gain</div>
+      <div class="prob-tag" onclick="selectTag(this,'acidity and digestive problems')">Acidity / Digestion</div>
+      <div class="prob-tag" onclick="selectTag(this,'low energy and fatigue throughout the day')">Low Energy</div>
+      <div class="prob-tag" onclick="selectTag(this,'irregular daily routine — no discipline')">Routine Fix</div>
+      <div class="prob-tag" onclick="selectTag(this,'skin problems — rashes or dryness')">Skin Issues</div>
+      <div class="prob-tag" onclick="selectTag(this,'joint pain and body stiffness')">Joint Pain</div>
+      <div class="prob-tag" onclick="selectTag(this,'want to build strength and gain healthy weight')">Gain Weight</div>
+      <div class="prob-tag" onclick="selectTag(this,'poor focus and memory')">Focus & Memory</div>
+      <div class="prob-tag" onclick="selectTag(this,'anger and irritability')">Anger</div>
+      <div class="prob-tag" onclick="selectTag(this,'depression and low motivation')">Depression</div>
+    </div>
+    <textarea class="problem-input" id="problemInput" placeholder="Or describe your problem here — e.g. 'I have insomnia and my mind races at night'..."></textarea>
+    <button class="heal-btn" id="healBtn" onclick="generatePlan()">Build My Personalised Healing Plan</button>
+  </div>
+
+  <div id="plan">
+    <div class="plan-header">
+      <h3>Your Personalised Plan</h3>
+      <div class="plan-title" id="planTitle"></div>
+      <div class="plan-sub" id="planSub"></div>
+    </div>
+
+    <div class="warning-box" id="avoidBox" style="display:none;">
+      <h4>⚠ Specifically Avoid (for your constitution + this problem)</h4>
+      <ul id="avoidList"></ul>
+    </div>
+
+    <!-- TASTE-BASED FOOD -->
+    <div class="plan-section">
+      <div class="plan-section-title">👅 Food Guidance — By Taste (not specific foods)</div>
+      <div id="tasteFood"></div>
+    </div>
+
+    <!-- COSMIC ROUTINE -->
+    <div class="plan-section">
+      <div class="plan-section-title">🌌 Daily Healing Routine — Cosmic Order</div>
+      <div class="plan-items" id="planItems"></div>
+    </div>
+
+    <!-- MUDRA + MEDITATION -->
+    <div class="plan-section">
+      <div class="plan-section-title">🤲 Mudras & Meditation for Your Problem</div>
+      <div class="mudra-grid" id="mudraGrid"></div>
+    </div>
+
+    <button class="print-btn" onclick="window.print()">🖨 Print My Plan</button>
+  </div>
+</main>
+
+<!-- TRI-GUNA + COMING SOON -->
+<section id="triguna-bottom">
+  <p class="section-eyebrow">The Three Forces</p>
+  <h2 class="section-title reveal">Tri-Guna</h2>
+  <p class="section-sub reveal">Beyond the body — the three qualities of mind and consciousness that determine how healing happens</p>
+  <div class="guna-cards">
+    <div class="guna-card sattva reveal"><div class="guna-symbol">☀</div><div class="guna-name">Sattva</div><div class="guna-element">Purity · Clarity · Light</div><p class="guna-desc">The healing state. When Sattva dominates — the body repairs, the mind clarifies, and true health emerges.</p></div>
+    <div class="guna-card rajas reveal"><div class="guna-symbol">🔥</div><div class="guna-name">Rajas</div><div class="guna-element">Activity · Passion · Motion</div><p class="guna-desc">The driving force. Rajas initiates change — but without Sattva, becomes the source of disease.</p></div>
+    <div class="guna-card tamas reveal"><div class="guna-symbol">🌑</div><div class="guna-name">Tamas</div><div class="guna-element">Inertia · Darkness · Rest</div><p class="guna-desc">The resting state. Necessary for recovery — but in excess, the root of stagnation and chronic disease.</p></div>
+  </div>
+  <div class="coming-soon-wrap reveal">
+    <p class="cs-eyebrow">Next Evolution</p>
+    <h3 class="cs-title">Svastha Web App</h3>
+    <p class="cs-sub">Complete healing intelligence — Dosha + Tri-Guna assessment combined for the most precise Ayurvedic profile ever built into a web platform.</p>
+    <div class="cs-features">
+      <div class="cs-feature">Tri-Guna self-assessment — Sattva, Rajas, Tamas scoring</div>
+      <div class="cs-feature">AI constitution tracking across seasons</div>
+      <div class="cs-feature">Personalised mudra + meditation programs</div>
+      <div class="cs-feature">Daily healing journal with pattern recognition</div>
+    </div>
+    <div class="cs-badge"><div class="cs-dot"></div>Coming Soon</div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">🪷 Svastha</div>
+  <div class="footer-links"><a href="index.html">Home</a><a href="prakriti.html">Dosha Analysis</a><a href="https://www.who.int" target="_blank">WHO</a><a href="https://www.ayurveda.org" target="_blank">Ayurveda.org</a></div>
+  <div class="footer-copy">© 2026 Svastha · Made by Sanat Kumar</div>
+</footer>
+<!-- FEEDBACK SECTION -->
+<section style="max-width:700px;margin:0 auto;padding:4rem 2rem 2rem;border-top:1px solid rgba(107,143,94,0.12);">
+  <p style="font-size:0.72rem;letter-spacing:0.4em;text-transform:uppercase;color:var(--bronze);margin-bottom:0.8rem;font-family:'Cinzel',serif;">Your Experience</p>
+  <h2 style="font-family:'Cinzel',serif;font-size:1.6rem;color:var(--cream);margin-bottom:0.5rem;">Share Feedback</h2>
+  <p style="font-family:'EB Garamond',serif;font-style:italic;font-size:0.9rem;color:var(--sage);margin-bottom:1.5rem;">Your feedback is private — only the admin can read it. It helps improve Svastha for every user.</p>
+
+  <!-- Star Rating -->
+  <div style="display:flex;gap:0.5rem;margin-bottom:1.2rem;" id="starRow">
+    <span style="font-size:0.82rem;color:var(--sage);margin-right:0.5rem;line-height:2rem;">Rate your experience:</span>
+    <span class="star-btn" onclick="setStar(1)" data-val="1" style="font-size:1.5rem;cursor:pointer;opacity:0.4;transition:opacity 0.2s;">⭐</span>
+    <span class="star-btn" onclick="setStar(2)" data-val="2" style="font-size:1.5rem;cursor:pointer;opacity:0.4;transition:opacity 0.2s;">⭐</span>
+    <span class="star-btn" onclick="setStar(3)" data-val="3" style="font-size:1.5rem;cursor:pointer;opacity:0.4;transition:opacity 0.2s;">⭐</span>
+    <span class="star-btn" onclick="setStar(4)" data-val="4" style="font-size:1.5rem;cursor:pointer;opacity:0.4;transition:opacity 0.2s;">⭐</span>
+    <span class="star-btn" onclick="setStar(5)" data-val="5" style="font-size:1.5rem;cursor:pointer;opacity:0.4;transition:opacity 0.2s;">⭐</span>
+  </div>
+
+  <textarea id="feedbackText" placeholder="What helped you? What was missing? What can be better? Your honest words build this further..." style="width:100%;padding:1.2rem 1.5rem;background:rgba(255,255,255,0.04);border:1px solid rgba(107,143,94,0.2);border-radius:2px;color:var(--cream);font-family:'EB Garamond',serif;font-size:1rem;resize:vertical;min-height:110px;outline:none;margin-bottom:1rem;font-style:italic;" onfocus="this.style.borderColor='rgba(200,149,42,0.4)'" onblur="this.style.borderColor='rgba(107,143,94,0.2)'"></textarea>
+
+  <button onclick="submitFeedback()" style="padding:0.9rem 2.5rem;background:linear-gradient(135deg,var(--moss),var(--leaf));color:var(--cream);font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:0.2em;text-transform:uppercase;border:none;border-radius:2px;cursor:pointer;transition:all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">Submit Feedback</button>
+
+  <div id="feedback-thanks" style="display:none;margin-top:1rem;padding:1rem 1.5rem;background:rgba(61,92,46,0.2);border:1px solid rgba(107,143,94,0.3);border-radius:2px;font-family:'EB Garamond',serif;font-style:italic;color:var(--sage);font-size:0.92rem;">
+    🪷 Thank you. Your words have been received.
+  </div>
+</section>
+
+<script>
+let selectedStar=0;
+function setStar(val){
+  selectedStar=val;
+  document.querySelectorAll('.star-btn').forEach(s=>{
+    s.style.opacity=parseInt(s.dataset.val)<=val?'1':'0.3';
+  });
+}
+function submitFeedback(){
+  const text=document.getElementById('feedbackText').value.trim();
+  if(!text){alert('Please write something before submitting.');return;}
+  const comments=JSON.parse(localStorage.getItem('sv_comments')||'[]');
+  comments.push({text,rating:selectedStar||'—',time:new Date().toISOString(),dosha:localStorage.getItem('sv_dosha')||null});
+  localStorage.setItem('sv_comments',JSON.stringify(comments));
+  document.getElementById('feedbackText').value='';
+  selectedStar=0;
+  document.querySelectorAll('.star-btn').forEach(s=>s.style.opacity='0.4');
+  document.getElementById('feedback-thanks').style.display='block';
+  setTimeout(()=>document.getElementById('feedback-thanks').style.display='none',4000);
+}
+</script>
+
+<div class="advance-bar"><span>Be Advance on Your Basic Level</span></div>
+
+<script>
+window.addEventListener('load',()=>{setTimeout(()=>document.getElementById('loader').classList.add('hidden'),2400);});
+const saved=JSON.parse(localStorage.getItem('sv_dosha')||'null');
+
+function getPrakritName(type){const n={vata:'Vāta Prakriti',pitta:'Pitta Prakriti',kapha:'Kapha Prakriti','vata-pitta':'Vāta-Pitta','vata-kapha':'Vāta-Kapha','pitta-kapha':'Pitta-Kapha',tridosha:'Tridoshic'};return n[type]||type;}
+
+const statusEl=document.getElementById('doshaStatus');
+if(saved){statusEl.innerHTML=`<div class="ds-left"><span>Your Prakriti</span><div class="ds-prakriti">${getPrakritName(saved.type)}</div></div><div class="ds-scores"><div class="ds-score"><div class="ds-score-val v">${saved.v}</div><div class="ds-score-label">Vāta</div></div><div class="ds-score"><div class="ds-score-val p">${saved.p}</div><div class="ds-score-label">Pitta</div></div><div class="ds-score"><div class="ds-score-val k">${saved.k}</div><div class="ds-score-label">Kapha</div></div></div><a href="prakriti.html" class="ds-btn">Update Scores</a>`;}
+else{statusEl.innerHTML=`<div style="width:100%;text-align:center"><p style="color:var(--sage);font-family:'EB Garamond',serif;font-style:italic;margin-bottom:0.8rem">You haven't entered your Dosha scores yet — for a fully personalised plan, do this first.</p><a href="prakriti.html" class="ds-btn">→ Enter My Dosha Scores</a></div>`;}
+
+function selectTag(el,text){document.querySelectorAll('.prob-tag').forEach(t=>t.classList.remove('selected'));el.classList.add('selected');document.getElementById('problemInput').value=text;}
+
+// ── MUDRA DATABASE ──
+const MUDRAS = {
+  insomnia:{
+    vata:[
+      {sym:'🤲',name:'Jnana Mudra',how:'Index finger touches thumb tip. Hands on knees, palms up.',benefit:'Calms the Vata nervous system. Direct connection to the calming aspect of consciousness.'},
+      {sym:'🙏',name:'Prana Mudra',how:'Ring finger + little finger touch thumb. Hold 15 min before sleep.',benefit:'Activates life force — reduces Vata depletion that causes insomnia.'},
+      {sym:'👁',name:'Shanmukhi Mudra (Pratyahara)',how:'Close all 9 gates — fingers over eyes, ears, nose, mouth. 5 min.',benefit:'Full sense withdrawal — shuts down the Vata nervous system\'s constant input processing.'}
+    ],
+    pitta:[
+      {sym:'🤲',name:'Sheetali Pranayama + Chin Mudra',how:'Rolled tongue breathing with index-thumb mudra. 10 min.',benefit:'Direct Pitta cooler — reduces cerebral heat that keeps Pitta mind active at night.'},
+      {sym:'🌙',name:'Chandra Mudra',how:'Ring finger touches base of thumb. Left hand only. 10 min.',benefit:'Moon energy — counteracts the solar fire of Pitta constitution.'}
+    ],
+    kapha:[
+      {sym:'🔥',name:'Surya Mudra',how:'Ring finger bent to touch base of thumb. Both hands. Morning only.',benefit:'Activates solar energy — resets the Kapha sleep clock by building morning fire.'},
+      {sym:'🤲',name:'Vayu Mudra',how:'Index finger bent to base of thumb. Hold 45 min daily.',benefit:'Reduces excess air that creates Kapha lethargy and irregular sleep.'}
+    ]
+  },
+  anxiety:{
+    vata:[
+      {sym:'🤲',name:'Jnana Mudra',how:'Index fingertip to thumb tip. Palms up on knees. 20 min daily.',benefit:'The consciousness mudra — directly anchors the scattered Vata mind.'},
+      {sym:'🙏',name:'Abhaya Mudra',how:'Right hand raised, palm facing out. Left hand in lap.',benefit:'Fearlessness mudra — dissolves the Vata anxiety that arises from feeling unprotected.'},
+      {sym:'🌱',name:'Prithvi Mudra',how:'Ring finger touches thumb tip. Both hands. 30 min daily.',benefit:'Earth element activation — grounds Vata air energy directly into earth stability.'}
+    ],
+    pitta:[
+      {sym:'💧',name:'Varun Mudra',how:'Little finger touches thumb tip. Both hands. 15 min.',benefit:'Water element — cools the Pitta fire that expresses as anger and stress.'},
+      {sym:'🤲',name:'Apan Vayu Mudra',how:'Index finger to base of thumb, middle+ring touch thumb tip.',benefit:'Heart mudra — releases the Pitta emotional pressure that builds as anger.'}
+    ],
+    kapha:[
+      {sym:'🔥',name:'Surya Mudra + Kapalabhati',how:'Surya mudra during vigorous breath work. 15 min.',benefit:'Activates the Kapha nervous system out of depression-anxiety — fire is the medicine.'},
+      {sym:'🌬',name:'Akash Mudra',how:'Middle finger touches thumb tip. Both hands. 15 min.',benefit:'Opens space element — relieves the heavy Kapha mental congestion causing low mood.'}
+    ]
+  },
+  weight:{
+    vata:[
+      {sym:'🌱',name:'Prithvi Mudra',how:'Ring finger to thumb tip. Both hands. 30 min daily.',benefit:'Earth element — builds Ojas (vital essence) and body mass in depleted Vata.'},
+      {sym:'🙏',name:'Prana Mudra',how:'Ring + little fingers touch thumb. 15 min twice daily.',benefit:'Activates life force — improves nutrient absorption for Vata weight gain.'}
+    ],
+    pitta:[
+      {sym:'💧',name:'Varun Mudra',how:'Little finger to thumb tip. Both hands. 20 min.',benefit:'Water balance — reduces Pitta inflammation that stores fat and blocks weight balance.'},
+      {sym:'🤲',name:'Apan Mudra',how:'Middle + ring finger touch thumb. Both hands. 20 min.',benefit:'Detox mudra — clears Pitta-driven toxins that cause inflammatory weight retention.'}
+    ],
+    kapha:[
+      {sym:'🔥',name:'Surya Mudra',how:'Ring finger bent to thumb base. Both hands. 45 min daily.',benefit:'The most powerful fat-reducing mudra — fires Kapha metabolism directly.'},
+      {sym:'🌬',name:'Linga Mudra',how:'Clasp hands together, right thumb erect. 15 min daily.',benefit:'Generates internal heat — activates thyroid and metabolic fire for Kapha weight loss.'}
+    ]
+  },
+  default:{
+    vata:[
+      {sym:'🤲',name:'Jnana Mudra',how:'Index fingertip to thumb tip. Palms up, eyes closed. 20 min.',benefit:'Grounds the Vata nervous system — the foundation practice for this constitution.'},
+      {sym:'🌱',name:'Prithvi Mudra',how:'Ring finger to thumb. Hold 30 min.',benefit:'Earth grounding — counteracts the air-space excess in Vata.'}
+    ],
+    pitta:[
+      {sym:'💧',name:'Varun Mudra',how:'Little finger to thumb. 15 min.',benefit:'Cooling water element — cools the Pitta fire at its source.'},
+      {sym:'🤲',name:'Chin Mudra',how:'Index finger to thumb. Palms down on knees. 20 min.',benefit:'Receptivity mudra — shifts Pitta from control to acceptance.'}
+    ],
+    kapha:[
+      {sym:'🔥',name:'Surya Mudra',how:'Ring finger bent to thumb base. Both hands. 45 min.',benefit:'Solar activation — the primary Kapha medicine through the hands.'},
+      {sym:'🌬',name:'Akash Mudra',how:'Middle finger to thumb. 15 min.',benefit:'Space element — opens Kapha\'s congested energy channels.'}
+    ]
+  }
+};
+
+// ── HEALING PLANS ──
+const PLANS = {
+  insomnia:{
+    vata:{
+      title:'Insomnia Healing Plan — Vāta Constitution',
+      sub:'Vata insomnia: nervous system hypersensitivity. Every practice targets nervous system grounding.',
+      tasteEat:['Madhura (Sweet) — grounding, nourishing, stabilising','Amla (Sour) — stimulates saliva, warms gently','Lavana (Salty) — anchors Vata, builds fluid'],
+      tasteAvoid:['Kashaya (Astringent) — dries and depletes Vata further','Tikta (Bitter) — increases air element, worsens insomnia','Katu (Pungent) — stimulates nervous system at night'],
+      routine:[
+        {time:'Sunrise',name:'Wake at same time — always',why:'Routine is Vata\'s medicine. One irregular morning breaks a week of healing.'},
+        {time:'Morning',name:'Warm oil self-massage — head and feet first',why:'Abhyanga grounds Vata through its endpoints. The nervous system calms through the skin.'},
+        {time:'Before 4 PM',name:'Complete all stimulating work',why:'Vata\'s anxiety window is 4–6 PM. Stimulation after this builds directly into night-time insomnia.'},
+        {time:'Sunset',name:'No news, no difficult conversation, no screens',why:'Vata nervous system absorbs everything. Evening input becomes midnight rumination.'},
+        {time:'90 min before sleep',name:'Warm foot oil massage — sesame or brahmi oil',why:'Pada abhyanga is the single most powerful Vata sleep practice. Non-negotiable.'},
+        {time:'60 min before sleep',name:'Warm sweet drink — milk, dates, or honey',why:'Sweet taste before sleep directly pacifies Vata and signals the nervous system to rest.'},
+        {time:'30 min before sleep',name:'Write everything on the mind — no editing',why:'Externalise racing thoughts onto paper. The mind releases what it has expressed.'},
+        {time:'Sleep time',name:'Same time every night — no exceptions',why:'Vata sleep is regulated by habit. Consistency is the cure.'}
+      ],
+      avoid:['Caffeine in any form after 12 PM','Cold food or drinks after sunset','All screens after 8 PM','Irregular sleep times — even on weekends','Skipping meals — hungry Vata cannot sleep']
+    },
+    pitta:{
+      title:'Insomnia Healing Plan — Pitta Constitution',
+      sub:'Pitta insomnia: excess cerebral heat and a mind that refuses to stop solving problems.',
+      tasteEat:['Madhura (Sweet) — cools Pitta fire, calms the mind','Tikta (Bitter) — cooling, liver-supporting','Kashaya (Astringent) — drying excess Pitta heat'],
+      tasteAvoid:['Katu (Pungent) — directly fans Pitta fire at night','Amla (Sour) — increases heat and acidity','Lavana (Salty) — raises blood pressure, inflames Pitta'],
+      routine:[
+        {time:'Fixed time',name:'Hard sleep boundary — same time every night',why:'Pitta will work until 2 AM if unchecked. A fixed time is an override, not a suggestion.'},
+        {time:'2 hours before sleep',name:'All work completely off — no exceptions',why:'Pitta\'s problem-solving mind activates under deadlines. Remove the deadlines.'},
+        {time:'90 min before sleep',name:'Cool shower — not cold, cool',why:'Lowers core body temperature — Pitta sleep requires a cooler body than other doshas.'},
+        {time:'60 min before sleep',name:'Brahmi oil scalp massage — coconut base',why:'Brahmi oil cools the cerebral heat where Pitta insomnia lives.'},
+        {time:'30 min before sleep',name:'Rose water on face and pillow',why:'Rose is the most Pitta-cooling scent — shifts the nervous system from alert to receiving.'},
+        {time:'Sleep',name:'Cool, dark room — temperature matters',why:'Pitta generates excess body heat — a cool environment is literal medicine.'}
+      ],
+      avoid:['Working after 8 PM','Spicy or sour food at dinner','Heated arguments in evening','Alcohol — it amplifies Pitta heat','Hot rooms at night']
+    },
+    kapha:{
+      title:'Sleep Regulation Plan — Kapha Constitution',
+      sub:'Kapha rarely has insomnia — more commonly oversleeps. This plan resets the clock earlier.',
+      tasteEat:['Katu (Pungent) — activates Kapha metabolism','Tikta (Bitter) — reduces Kapha accumulation','Kashaya (Astringent) — drying, lightening'],
+      tasteAvoid:['Madhura (Sweet) — heaviest taste, deepens Kapha sleep','Amla (Sour) — increases accumulation','Lavana (Salty) — water retention worsens Kapha heaviness'],
+      routine:[
+        {time:'Before sunrise',name:'Wake aggressively early — cold face splash',why:'Kapha oversleeps into the 6–10 AM Kapha window — this creates all-day heaviness.'},
+        {time:'Immediately on waking',name:'Vigorous movement — run or jump',why:'Kapha needs physical intensity to activate. Gentle movement does not work.'},
+        {time:'Midday',name:'No nap under any circumstances',why:'Daytime sleep is the primary cause of Kapha night irregularity.'},
+        {time:'By 6:30 PM',name:'Light dinner — early',why:'Late food creates overnight Kapha accumulation that disrupts the sleep-wake rhythm.'},
+        {time:'9 PM',name:'Sleep early — Kapha needs 7 hours maximum',why:'Early sleep = early wake. This is the entire Kapha sleep protocol.'}
+      ],
+      avoid:['Sleeping past sunrise','Dairy and sweets in evening','Sedentary evenings','Napping','More than 7.5 hours sleep']
+    }
+  },
+  anxiety:{
+    vata:{
+      title:'Anxiety Healing Plan — Vāta Constitution',
+      sub:'Vata anxiety is the most common — nervous system hypersensitivity. Your constitution is the origin of this condition.',
+      tasteEat:['Madhura (Sweet) — the primary Vata pacifier','Amla (Sour) — warms and grounds gently','Lavana (Salty) — stabilises Vata\'s excess air'],
+      tasteAvoid:['Katu (Pungent) — directly stimulates nervous system','Tikta (Bitter) — increases air, worsens anxiety','Kashaya (Astringent) — depletes and dries Vata'],
+      routine:[
+        {time:'Sunrise',name:'Barefoot on earth — 10 minutes minimum',why:'Direct earth contact reduces cortisol measurably. Vata needs grounding through the feet.'},
+        {time:'Morning',name:'Nadi Shodhana pranayama — 20 minutes',why:'Alternate nostril breathing balances the autonomic nervous system. Clinical anxiolytic.'},
+        {time:'Every 3 hours',name:'Eat warm, cooked food — never skip',why:'Hungry Vata is anxious Vata. Irregular eating is one of the top anxiety triggers.'},
+        {time:'4–6 PM',name:'Rest — do not schedule demands here',why:'This is the Vata anxiety window. Fighting it creates the most severe anxiety episodes.'},
+        {time:'Evening',name:'Warm oil self-massage — 10 minutes',why:'Abhyanga calms the nervous system through the skin — Vata\'s most responsive interface.'},
+        {time:'Night',name:'Write before sleep — brain dump everything',why:'The anxious Vata mind runs on unprocessed input. Writing processes it.'}
+      ],
+      avoid:['Caffeine — amplifies Vata nervous system × 10','Cold food and drinks','Skipping meals','Overstimulating environments and news','Irregular schedule']
+    },
+    pitta:{
+      title:'Anger & Stress Plan — Pitta Constitution',
+      sub:'Pitta anxiety is fire — manifesting as irritability, perfectionism, and explosive anger.',
+      tasteEat:['Madhura (Sweet) — primary Pitta cooler','Tikta (Bitter) — cools liver where Pitta anger lives','Kashaya (Astringent) — drying, cooling'],
+      tasteAvoid:['Katu (Pungent) — pours fuel on Pitta fire','Amla (Sour) — increases heat and acidity','Lavana (Salty) — raises inflammation'],
+      routine:[
+        {time:'Morning',name:'Sitali pranayama — 10 minutes',why:'Cooling breath before the fire of the day. Pitta\'s most important morning practice.'},
+        {time:'Noon',name:'Eat lunch — on time, without exception',why:'Hungry Pitta becomes aggressive. Missing lunch is the fastest way to trigger Pitta anger.'},
+        {time:'Afternoon',name:'Avoid heat — physical, emotional, environmental',why:'All forms of heat aggravate Pitta. Hot office, hot arguments, hot sun — same effect.'},
+        {time:'Evening',name:'Moon gazing or cool evening walk',why:'Pitta pacifies under the moon\'s cooling influence — physiologically documented.'},
+        {time:'Night',name:'Brahmi oil on scalp before sleep',why:'Cools the cerebral Pitta heat. The specific location of Pitta\'s mental fire.'}
+      ],
+      avoid:['Skipping meals — creates the most dangerous Pitta state','Caffeine and alcohol','Heated debates after 7 PM','Competitive pressure in evening hours','Hot food at dinner']
+    },
+    kapha:{
+      title:'Depression & Motivation Plan — Kapha Constitution',
+      sub:'Kapha anxiety is depression and paralysis — not racing thoughts but complete inertia.',
+      tasteEat:['Katu (Pungent) — neurological activation','Tikta (Bitter) — reduces heaviness','Kashaya (Astringent) — lightening'],
+      tasteAvoid:['Madhura (Sweet) — deepens Kapha depression','Amla (Sour) — increases accumulation','Lavana (Salty) — water retention worsens heaviness'],
+      routine:[
+        {time:'Before sunrise',name:'Wake and move immediately — vigorous',why:'Kapha depression is literally the absence of activation. Movement is the antidepressant.'},
+        {time:'Morning',name:'Kapalbhati 3 rounds — 30 forceful breaths each',why:'Forces prana through the system. Breaks Kapha inertia at the physiological level.'},
+        {time:'Daily',name:'Social engagement — prescribed, not optional',why:'Kapha withdraws when depressed. Isolation is the condition deepening itself.'},
+        {time:'Daily',name:'One new experience — however small',why:'Novelty is physiologically stimulating for Kapha. Sameness deepens stagnation.'},
+        {time:'Evening',name:'Vigorous walk — not gentle, vigorous',why:'Second Kapha activation window. Use it or accumulate more tomorrow.'}
+      ],
+      avoid:['Isolation and withdrawal','Sugar, dairy, fried food — they deepen Kapha depression','Sleeping more than 7 hours','Sedentary, screen-only days','Avoiding discomfort']
+    }
+  },
+  weight:{
+    vata:{
+      title:'Healthy Weight Gain — Vāta Constitution',
+      sub:'Vata cannot gain weight because of poor absorption and high metabolism. This plan builds Ojas — deep tissue nourishment.',
+      tasteEat:['Madhura (Sweet) — most anabolic taste, builds tissue','Amla (Sour) — improves absorption and digestive fire','Lavana (Salty) — holds water and builds mass'],
+      tasteAvoid:['Kashaya (Astringent) — most catabolic taste for Vata','Tikta (Bitter) — reduces tissue, worst for weight gain','Katu (Pungent) — burns away what Vata is trying to build'],
+      routine:[
+        {time:'Sunrise',name:'Warm oil self-massage before shower',why:'Abhyanga improves lymph circulation and nutrient absorption — how Vata builds mass.'},
+        {time:'Morning',name:'Large warm breakfast — mandatory, never skip',why:'This is where Vata weight gain is built. Skipping breakfast is the biggest mistake.'},
+        {time:'10 AM – 2 PM',name:'Largest, most caloric meal of day',why:'Peak absorption window. Vata builds mass only when it can properly digest what it eats.'},
+        {time:'Afternoon',name:'Resistance training — NOT running or cardio',why:'Cardio depletes Vata. Heavy compound lifting builds the mass this constitution cannot easily accumulate.'},
+        {time:'Night',name:'Sweet drink before sleep — milk, honey, dates',why:'Anabolic window during sleep. Sweet taste signals the body to build rather than burn.'}
+      ],
+      avoid:['Skipping any meal','All raw and cold food','Cardio exercise','Stress — it directly burns Vata tissue','Fasting of any kind']
+    },
+    pitta:{
+      title:'Weight Balance Plan — Pitta Constitution',
+      sub:'Pitta weight issues are inflammation-driven. Cool the fire and the weight balances itself.',
+      tasteEat:['Madhura (Sweet) — anti-inflammatory, cooling','Tikta (Bitter) — liver support, fat metabolism','Kashaya (Astringent) — drying, binding'],
+      tasteAvoid:['Katu (Pungent) — inflames liver and fat tissue','Amla (Sour) — increases acid and inflammation','Lavana (Salty) — raises inflammatory markers'],
+      routine:[
+        {time:'Morning',name:'Cooling yoga — twists and forward folds',why:'Twists detox the liver — Pitta\'s most vulnerable organ and the root of inflammatory weight.'},
+        {time:'Noon exactly',name:'Largest meal at solar peak',why:'Pitta metabolism peaks at noon. Eating here maximises burn and minimises storage.'},
+        {time:'By 7:30 PM',name:'Light dinner — before sunset ideally',why:'Late digestion generates heat that stores as fat in Pitta constitution.'},
+        {time:'Evening',name:'Cool walk — not hot, not running',why:'Cools the inflammatory cascade. Moderate movement at sunset is Pitta\'s best exercise window.'}
+      ],
+      avoid:['Alcohol — most inflammatory for Pitta','Spicy food','Late dinner','Overworking — cortisol drives Pitta fat storage','Red meat']
+    },
+    kapha:{
+      title:'Weight Loss Plan — Kapha Constitution',
+      sub:'Kapha weight gain is metabolic stagnation. This plan is intensive and non-negotiable.',
+      tasteEat:['Katu (Pungent) — fires the metabolic engine','Tikta (Bitter) — primary fat-reducing taste','Kashaya (Astringent) — drying, lightening, counter-Kapha'],
+      tasteAvoid:['Madhura (Sweet) — the Kapha weight gain fuel','Amla (Sour) — increases Kapha accumulation','Lavana (Salty) — water retention is Kapha\'s pattern'],
+      routine:[
+        {time:'Before sunrise',name:'Wake and exercise within 15 minutes',why:'Kapha metabolic activation requires immediate action. Delay = fat storage mode all day.'},
+        {time:'Morning',name:'60 min vigorous exercise — run, HIIT, weights',why:'Kapha needs more intensity than any other dosha. Moderate exercise does not work.'},
+        {time:'Midday only',name:'One real meal — spiced, no wheat, no dairy',why:'Two-meal maximum protocol. Kapha\'s metabolism cannot handle three meals.'},
+        {time:'Afternoon',name:'Second exercise session or 60 min walk',why:'Second fat-burning window. Essential for meaningful Kapha weight loss.'},
+        {time:'By 6:30 PM',name:'Light dinner or skip',why:'Everything eaten after 7 PM in Kapha constitution becomes fat. This is physiological fact.'}
+      ],
+      avoid:['Dairy in any form','Wheat and sugar','Sleeping after meals','Napping','Eating after 7 PM']
+    }
+  }
+};
+
+function detectProblem(text){
+  const t=text.toLowerCase();
+  if(t.includes('insomnia')||t.includes('sleep')||t.includes('cannot sleep'))return'insomnia';
+  if(t.includes('anxiety')||t.includes('overthink')||t.includes('stress')||t.includes('anger')||t.includes('irritat')||t.includes('depression')||t.includes('motivation'))return'anxiety';
+  if(t.includes('weight')||t.includes('fat')||t.includes('slim')||t.includes('gain'))return'weight';
+  return'anxiety'; // default
+}
+
+function getMudraKey(prob){if(prob==='insomnia')return'insomnia';if(prob==='anxiety')return'anxiety';if(prob==='weight')return'weight';return'default';}
+
+function generatePlan(){
+  const problem=document.getElementById('problemInput').value.trim();
+  if(!problem){alert('Please describe your problem or select one above.');return;}
+  const btn=document.getElementById('healBtn');
+  btn.disabled=true;btn.innerHTML='<span class="loading-dots">Building your plan</span>';
+
+  setTimeout(()=>{
+    const probKey=detectProblem(problem);
+    const base=saved?saved.base:'vata';
+    const planDB=PLANS[probKey]||PLANS.anxiety;
+    const plan=planDB[base]||planDB.vata;
+
+    document.getElementById('planTitle').textContent=plan.title;
+    document.getElementById('planSub').textContent=plan.sub;
+
+    // Taste food
+    document.getElementById('tasteFood').innerHTML=`
+      <div class="taste-suggestion">
+        <h5>✓ Eat foods of these tastes:</h5>
+        <div class="taste-tags-row">${plan.tasteEat.map(t=>`<div class="tt eat">${t}</div>`).join('')}</div>
+      </div>
+      <div class="taste-suggestion">
+        <h5>✗ Avoid foods of these tastes:</h5>
+        <div class="taste-tags-row">${plan.tasteAvoid.map(t=>`<div class="tt avoid">${t}</div>`).join('')}</div>
+      </div>`;
+
+    // Routine
+    document.getElementById('planItems').innerHTML=plan.routine.map(r=>`
+      <div class="plan-item">
+        <div class="plan-item-time">${r.time}</div>
+        <div><div class="plan-item-name">${r.name}</div><div class="plan-item-why">${r.why}</div></div>
+        <div class="plan-check" onclick="this.classList.toggle('done')">✓</div>
+      </div>`).join('');
+
+    // Mudras
+    const mudraKey=getMudraKey(probKey);
+    const mudras=(MUDRAS[mudraKey]&&MUDRAS[mudraKey][base])||(MUDRAS.default[base])||MUDRAS.default.vata;
+    document.getElementById('mudraGrid').innerHTML=mudras.map(m=>`
+      <div class="mudra-card">
+        <div class="mudra-symbol">${m.sym}</div>
+        <div class="mudra-name">${m.name}</div>
+        <div class="mudra-how">${m.how}</div>
+        <div class="mudra-benefit">${m.benefit}</div>
+      </div>`).join('');
+
+    // Avoid
+    if(plan.avoid){
+      document.getElementById('avoidList').innerHTML=plan.avoid.map(a=>`<li>${a}</li>`).join('');
+      document.getElementById('avoidBox').style.display='block';
+    }
+
+    const planEl=document.getElementById('plan');
+    planEl.classList.add('visible');
+    planEl.scrollIntoView({behavior:'smooth',block:'start'});
+    btn.disabled=false;btn.textContent='Generate New Plan';
+  },1800);
+}
+
+const observer=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+</script>
+</body>
+</html>
